@@ -5,6 +5,8 @@
 
 #define WIDTH 640
 #define HEIGHT 480
+#define TITLE "[pre-alpha] MP-Explorer"
+#define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
 
 int main (int argc, char **argv) {
     printf("[MAIN] Setting up SDL2 ...\n");
@@ -14,11 +16,7 @@ int main (int argc, char **argv) {
         printf("[ERR] Failed to init SDL2 : %s\n", SDL_GetError());
         return 1;
     }
-    window = SDL_CreateWindow(
-        "[pre-alpha] MP-Explorer",
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        WIDTH, HEIGHT,
-        SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow(TITLE, WINDOW_POS, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
         printf("[ERR] Failed to create SDL2 window %s\n", SDL_GetError());
         return 2;
