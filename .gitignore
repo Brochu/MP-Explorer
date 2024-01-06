@@ -24,12 +24,16 @@
 *.lai
 *.la
 *.a
-*.lib
+# *.lib
 
 # Executables
 *.exe
 *.out
 *.app
+*.pdb
 
 #-------------------
 build/
+.cache/
+
+compile_commands.json
