@@ -37,6 +37,8 @@ set (libs
     dxguid.lib
 
     assimp-vc143-mt.lib
+    SDL2
+    SDL2main
 )
 
 add_executable (MP-Explorer
@@ -48,6 +50,7 @@ target_include_directories(MP-Explorer
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/include
         ${CMAKE_CURRENT_LIST_DIR}/include/imgui
+        ${CMAKE_CURRENT_LIST_DIR}/include/SDL2
 )
 target_link_directories(MP-Explorer
     PRIVATE
