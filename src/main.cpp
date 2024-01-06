@@ -3,8 +3,8 @@
 #include "SDL.h"
 #include "imgui.h"
 
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 800
+#define HEIGHT 600
 #define TITLE "[pre-alpha] MP-Explorer"
 #define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
 
@@ -34,7 +34,10 @@ int main (int argc, char **argv) {
     bool quit = false;
     while(quit == false) {
         while(SDL_PollEvent(&e)) {
-            if( e.type == SDL_QUIT ) {
+            if(e.type == SDL_QUIT) {
+                quit = true;
+            }
+            else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
                 quit = true;
             }
         }
