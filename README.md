@@ -3,10 +3,10 @@ Best try to write a renderer that is easy to work with. Should try and make it w
 
 ##Tools Included
 
-- CMake - Build System
-- SDL2 - Window Management
-- ImGui - Immediate Mode Debug UI
-- Tracy - Profiling
+- CMake: Build System
+- SDL2: Window Management
+- ImGui: Immediate Mode Debug UI
+- Tracy: Profiling
 
 ##Reverse Engineer MP Files
 
