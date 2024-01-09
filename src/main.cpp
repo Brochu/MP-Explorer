@@ -8,8 +8,9 @@
 #define TITLE "[pre-alpha] MP-Explorer"
 #define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
     printf("[MAIN] Setting up SDL2 ...\n");
+
     SDL_Window *window = nullptr;
     SDL_Surface *surface = nullptr;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
