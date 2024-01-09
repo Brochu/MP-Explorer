@@ -44,8 +44,8 @@ set (libs
     dxguid.lib
 
     assimp-vc143-mt.lib
-    SDL2
     SDL2main
+    SDL2
 )
 
 add_executable (MP-Explorer
