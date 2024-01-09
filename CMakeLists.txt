@@ -4,6 +4,9 @@ project (MP-Explorer)
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_CXX_STANDARD 20)
 
+set (DEBUG_OPTIONS -g -O0)
+set (RELEASE_OPTIONS -O3)
+
 set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/app.h
     ${CMAKE_CURRENT_LIST_DIR}/include/renderer.h
@@ -49,6 +52,9 @@ add_executable (MP-Explorer
     ${source} ${imgui_source}
     ${headers} ${imgui_headers}
 )
+
+target_compile_options(MP-Explorer PUBLIC "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>")
+target_compile_options(MP-Explorer PUBLIC "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS}>")
 
 target_include_directories(MP-Explorer
     PRIVATE
