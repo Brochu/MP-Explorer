@@ -10,7 +10,7 @@ namespace App {
 #define TITLE "[pre-alpha] MP-Explorer"
 #define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
 
-bool running = true;
+static bool running = true;
 SDL_Window *window;
 
 void setup() {
