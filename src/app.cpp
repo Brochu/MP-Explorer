@@ -1,6 +1,7 @@
 #include "app.h"
-#include "SDL.h"
+#include "renderer.h"
 
+#include "SDL.h"
 #include <stdio.h>
 
 namespace App {
@@ -24,6 +25,8 @@ void setup() {
         printf("[ERR] Failed to create SDL2 window %s\n", SDL_GetError());
     }
     running = true;
+
+    Render::setup(); //TODO: ???
 }
 
 void step() { //TODO: Input handling && app logic?
