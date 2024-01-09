@@ -4,7 +4,7 @@ const std = @import("std");
 // declaratively construct a build graph that will be executed by an external
 // runner.
 pub fn build(b: *std.Build) void {
-    const lazy = std.build.LazyPath;
+    const LazyPath = std.build.LazyPath;
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -24,12 +24,33 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe.linkLibCpp();
-    exe.addObjectFile(lazy.relative("libs/SDL2.lib"));
-    exe.addObjectFile(lazy.relative("libs/SDL2main.lib"));
+    exe.addIncludePath(LazyPath.relative("include/"));
+    exe.addIncludePath(LazyPath.relative("include/SDL2/"));
+    exe.addIncludePath(LazyPath.relative("include/imgui/"));
 
-    exe.addIncludePath(lazy.relative("include/"));
-    exe.addIncludePath(lazy.relative("include/SDL2/"));
+    const imgui_src = [_][]const u8{
+        "src/imgui/imgui.cpp",
+        "src/imgui/imgui_demo.cpp",
+        "src/imgui/imgui_draw.cpp",
+        //"src/imgui/imgui_impl_dx12.cpp",
+        //"src/imgui/imgui_impl_win32.cpp",
+        "src/imgui/imgui_tables.cpp",
+        "src/imgui/imgui_widgets.cpp",
+    };
+    const flags = [_][]const u8{};
+    exe.addCSourceFiles(&imgui_src, &flags);
+
+    exe.linkLibCpp();
+    exe.linkSystemLibrary("d3d12");
+    exe.linkSystemLibrary("dxgi");
+    //TODO: Why can't it find those?
+    //exe.linkSystemLibrary("d3dcompiler");
+    //exe.linkSystemLibraryNeeded("dxguid");
+
+    exe.addObjectFile(LazyPath.relative("libs/d3dcompiler.lib"));
+    exe.addObjectFile(LazyPath.relative("libs/dxguid.lib"));
+    exe.addObjectFile(LazyPath.relative("libs/SDL2.lib"));
+    exe.addObjectFile(LazyPath.relative("libs/SDL2main.lib"));
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

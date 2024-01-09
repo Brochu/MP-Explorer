@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "SDL.h"
-//#include "imgui.h"
+#include "imgui.h"
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -25,9 +25,9 @@ int main (int argc, char **argv) {
     SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 0));
     SDL_UpdateWindowSurface(window);
 
-    //printf("[MAIN] Setting up ImGUI lib ...\n");
-    //IMGUI_CHECKVERSION();
-    //ImGui::CreateContext();
+    printf("[MAIN] Setting up ImGUI lib ...\n");
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
 
     //TODO: Application logic runs...
     SDL_Event e;
