@@ -3,7 +3,7 @@
 int main(int argc, char **argv) {
     App::setup();
 
-    while(App::running()) {
+    while(App::running) {
         App::step();
     }
 

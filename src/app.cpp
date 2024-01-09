@@ -1,4 +1,5 @@
 #include "app.h"
+#define SDL_MAIN_HANDLED
 #include "SDL.h"
 
 #include <stdio.h>
@@ -9,12 +10,9 @@ namespace App {
 #define TITLE "[pre-alpha] MP-Explorer"
 #define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
 
-State s;
-bool running() {
-    return s.running;
-}
-
+bool running = true;
 SDL_Window *window;
+
 void setup() {
     printf("[MAIN] Setting up SDL2 ...\n");
 
@@ -26,14 +24,14 @@ void setup() {
     if (window == NULL) {
         printf("[ERR] Failed to create SDL2 window %s\n", SDL_GetError());
     }
-    s.running = true;
+    running = true;
 }
 
 void step() { //TODO: Input handling && app logic?
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
         if(e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
-            s.running = false;
+            running = false;
         }
     }
 }

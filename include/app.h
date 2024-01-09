@@ -1,9 +1,8 @@
+#pragma once
+
 namespace App {
 
-struct State {
-    bool running = true;
-};
-bool running();
+extern bool running;
 
 void setup();
 void step();
