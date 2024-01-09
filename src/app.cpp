@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 namespace App {
-#define WIDTH 1026
+#define WIDTH 1024
 #define HEIGHT 768
 #define TITLE "[pre-alpha] MP-Explorer"
 #define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
