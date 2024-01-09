@@ -6,6 +6,7 @@ set (CMAKE_CXX_STANDARD 20)
 
 set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/app.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/renderer.h
 )
 set (imgui_headers
     ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imconfig.h
@@ -21,6 +22,7 @@ set (imgui_headers
 set (source
     ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/app.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/renderer.cpp
 )
 set (imgui_source
     ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui.cpp
