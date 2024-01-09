@@ -55,13 +55,18 @@ target_include_directories(MP-Explorer
         ${CMAKE_CURRENT_LIST_DIR}/include
         ${CMAKE_CURRENT_LIST_DIR}/include/imgui
         ${CMAKE_CURRENT_LIST_DIR}/include/SDL2
+        ${CMAKE_CURRENT_LIST_DIR}/tracy/public/tracy
 )
 target_link_directories(MP-Explorer
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/libs
 )
 
-target_link_libraries(MP-Explorer ${libs})
+# Tracy setup
+add_subdirectory(tracy)
+add_compile_definitions(TRACY_ENABLE=1)
+
+target_link_libraries(MP-Explorer ${libs} Tracy::TracyClient)
 
 set_target_properties(MP-Explorer
     PROPERTIES
