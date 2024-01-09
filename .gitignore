@@ -35,5 +35,6 @@
 #-------------------
 build/
 .cache/
+zig-cache/
 
 compile_commands.json
