@@ -31,6 +31,7 @@ UINT64 fenceValues[FRAME_COUNT];
 inline void ThrowIfFailed(HRESULT hr);
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter);
 void WaitForGPU();
+void MoveToNextFrame();
 
 void setup(HWND hwnd, int width, int height) {
     printf("[R-START] Preparing renderer.\n");
@@ -182,6 +183,20 @@ void WaitForGPU() {
     WaitForSingleObjectEx(fenceEvent, INFINITE, false);
 
     fenceValues[frameIndex]++;
+}
+
+void MoveToNextFrame() {
+    const UINT64 currentFenceValue = fenceValues[frameIndex];
+    ThrowIfFailed(queue->Signal(fence.Get(), currentFenceValue));
+
+    frameIndex = swapchain->GetCurrentBackBufferIndex();
+
+    if (fence->GetCompletedValue() < fenceValues[frameIndex]) {
+        ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
+        WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
+    }
+
+    fenceValues[frameIndex] = currentFenceValue + 1;
 }
 
 }
