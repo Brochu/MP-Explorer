@@ -18,7 +18,10 @@ UINT rtvDescSize;
 
 ComPtr<ID3D12Device> device;
 ComPtr<ID3D12CommandQueue> queue;
+ComPtr<ID3D12CommandAllocator> cmdAllocs[FRAME_COUNT];
 ComPtr<IDXGISwapChain4> swapchain;
+ComPtr<ID3D12DescriptorHeap> rtvheap;
+ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 
 UINT frameIndex;
 UINT64 fenceValues[FRAME_COUNT];
@@ -121,6 +124,30 @@ void setup(HWND hwnd, int width, int height) {
     ThrowIfFailed(factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER));
     ThrowIfFailed(swap.As(&swapchain));
     frameIndex = swapchain->GetCurrentBackBufferIndex();
+    //-------------------------
+    { // Descriptor Heaps
+        D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc {};
+        rtvHeapDesc.NumDescriptors = FRAME_COUNT;
+        rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvheap)));
+        rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    }
+    //-------------------------
+    { // Frame Resources
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvhandle(rtvheap->GetCPUDescriptorHandleForHeapStart());
+
+        for (UINT i = 0; i < FRAME_COUNT; i++) {
+            ThrowIfFailed(swapchain->GetBuffer(i, IID_PPV_ARGS(&rtvs[i])));
+            device->CreateRenderTargetView(rtvs[i].Get(), nullptr, rtvhandle);
+            rtvhandle.Offset(1, rtvDescSize);
+
+            ThrowIfFailed(device->CreateCommandAllocator(
+                D3D12_COMMAND_LIST_TYPE_DIRECT,
+                IID_PPV_ARGS(&cmdAllocs[i])
+            ));
+        }
+    }
 }
 
 void frame() {
