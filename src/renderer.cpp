@@ -24,10 +24,13 @@ ComPtr<ID3D12DescriptorHeap> rtvheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 
 UINT frameIndex;
+HANDLE fenceEvent;
+ComPtr<ID3D12Fence> fence;
 UINT64 fenceValues[FRAME_COUNT];
 
 inline void ThrowIfFailed(HRESULT hr);
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter);
+void WaitForGPU();
 
 void setup(HWND hwnd, int width, int height) {
     printf("[R-START] Preparing renderer.\n");
@@ -110,6 +113,9 @@ void frame() {
 
 void teardown() {
     printf("[R-STOP] Teardown renderer.\n");
+
+    WaitForGPU();
+    CloseHandle(fenceEvent);
 }
 
 inline void ThrowIfFailed(HRESULT hr) {
@@ -158,6 +164,14 @@ void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool
     }
 
     *ppAdapter = adapter.Detach();
+}
+
+void WaitForGPU() {
+    ThrowIfFailed(queue->Signal(fence.Get(), fenceValues[frameIndex]));
+    ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
+    WaitForSingleObjectEx(fenceEvent, INFINITE, false);
+
+    fenceValues[frameIndex]++;
 }
 
 }
