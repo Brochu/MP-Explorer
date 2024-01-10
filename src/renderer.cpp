@@ -15,6 +15,7 @@ using namespace Microsoft::WRL;
 D3D12_VIEWPORT viewport;
 D3D12_RECT scissor;
 int32_t rtvDescSize;
+int32_t currentbackbuffer = 0;
 
 ComPtr<ID3D12Device> device;
 ComPtr<ID3D12CommandQueue> queue;
@@ -121,6 +122,52 @@ void setup(HWND hwnd, int width, int height) {
 }
 
 void frame() {
+    WaitForFence(framefence[currentbackbuffer].Get(), fencevals[currentbackbuffer], fenceevts[currentbackbuffer]);
+
+    cmdallocs[currentbackbuffer].Reset();
+
+    ID3D12GraphicsCommandList *cmdlist = cmdlists[currentbackbuffer].Get();
+    cmdlist->Reset(cmdallocs[currentbackbuffer].Get(), nullptr);
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rth {};
+    rth.InitOffsetted(rtheap->GetCPUDescriptorHandleForHeapStart(), currentbackbuffer, rtvDescSize);
+
+    cmdlist->OMSetRenderTargets(1, &rth, 0, nullptr);
+    cmdlist->RSSetViewports(1, &viewport);
+    cmdlist->RSSetScissorRects(1, &scissor);
+
+    D3D12_RESOURCE_BARRIER barrier {};
+    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    barrier.Transition.pResource = rts[currentbackbuffer].Get();
+    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    cmdlist->ResourceBarrier(1, &barrier);
+
+    static const float clearcol[] = { 0.042f, 0.042f, 0.042f, 1.f };
+    cmdlist->ClearRenderTargetView(rth, clearcol, 0, nullptr);
+
+    D3D12_RESOURCE_BARRIER present = {};
+    present.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    present.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    present.Transition.pResource = rts[currentbackbuffer].Get();
+    present.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    present.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+    present.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    cmdlist->ResourceBarrier(1, &present);
+    cmdlist->Close();
+
+    ID3D12CommandList *commands[] = { cmdlist };
+    queue->ExecuteCommandLists(1, commands);
+    swapchain->Present(1, 0);
+
+    const uint64_t value = currentfenceval;
+    queue->Signal(framefence[currentbackbuffer].Get(), value);
+    fencevals[currentbackbuffer] = value;
+    ++currentfenceval;
+
+    currentbackbuffer = (currentbackbuffer + 1) % FRAME_COUNT;
 }
 
 void teardown() {
