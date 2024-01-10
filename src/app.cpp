@@ -3,6 +3,8 @@
 
 #include "SDL.h"
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 namespace App {
 #define WIDTH 1024
@@ -11,6 +13,7 @@ namespace App {
 #define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
 
 bool running = true;
+HWND hwnd;
 SDL_Window *window;
 
 void setup() {
@@ -26,7 +29,8 @@ void setup() {
     }
     running = true;
 
-    Render::setup(); //TODO: ???
+    hwnd = GetActiveWindow();
+    Render::setup(hwnd, WIDTH, HEIGHT);
 }
 
 void step() { //TODO: Input handling && app logic?
