@@ -22,6 +22,7 @@ ComPtr<IDXGISwapChain> swapchain;
 ComPtr<ID3D12CommandAllocator> cmdallocs[FRAME_COUNT];
 ComPtr<ID3D12GraphicsCommandList> cmdlists[FRAME_COUNT];
 ComPtr<ID3D12Resource> rts[FRAME_COUNT];
+ComPtr<ID3D12DescriptorHeap> rtheap;
 
 uint64_t currentfenceval;
 uint64_t fencevals[FRAME_COUNT];
@@ -73,7 +74,14 @@ void setup(HWND hwnd, int width, int height) {
         assert(false);
     }
 
-    currentfenceval = 1;
+    D3D12_DESCRIPTOR_HEAP_DESC heapdesc {};
+    heapdesc.NumDescriptors = FRAME_COUNT;
+    heapdesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    heapdesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    device->CreateDescriptorHeap(&heapdesc, IID_PPV_ARGS(&rtheap));
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvhandle { rtheap->GetCPUDescriptorHandleForHeapStart() };
+    rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     for (int i = 0; i < FRAME_COUNT; i++) {
         device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&cmdallocs[i]));
         device->CreateCommandList(0,
@@ -83,25 +91,34 @@ void setup(HWND hwnd, int width, int height) {
             IID_PPV_ARGS(&cmdlists[i])
         );
         cmdlists[i]->Close();
-
+        // ----------------------------------------
         fenceevts[i] = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         fencevals[i] = 0;
         device->CreateFence(fencevals[i], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&framefence[i]));
+        // ----------------------------------------
 
         swapchain->GetBuffer(i, IID_PPV_ARGS(&rts[i]));
+        D3D12_RENDER_TARGET_VIEW_DESC rtvdesc {};
+        rtvdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        rtvdesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+        rtvdesc.Texture2D.MipSlice = 0;
+        rtvdesc.Texture2D.PlaneSlice = 0;
+
+        device->CreateRenderTargetView(rts[i].Get(), &rtvdesc, rtvhandle);
+        rtvhandle.Offset(rtvDescSize);
     }
-    rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-    //TODO: Setup Render Target Views
-
+    currentfenceval = 1;
     scissor = { 0, 0, width, height };
     viewport = { 0.f, 0.f, (float)width, (float)height, 0.f, 1.f };
 }
 
 void frame() {
+    //TODO: Up next, need to move the preparerender logic here
 }
 
 void teardown() {
+    //TODO: Go through objects created in setup and free in reverse order
 }
 
 }
