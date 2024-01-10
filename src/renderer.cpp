@@ -29,6 +29,13 @@ uint64_t fencevals[FRAME_COUNT];
 HANDLE fenceevts[FRAME_COUNT];
 ComPtr<ID3D12Fence> framefence[FRAME_COUNT];
 
+void WaitForFence(ID3D12Fence *fence, uint64_t fenceval, HANDLE event) {
+    if (fence->GetCompletedValue() < fenceval) {
+        fence->SetEventOnCompletion(fenceval, event);
+        WaitForSingleObject(event, INFINITE);
+    }
+}
+
 void setup(HWND hwnd, int width, int height) {
     ComPtr<ID3D12Debug> debugCtrl;
     D3D12GetDebugInterface(IID_PPV_ARGS(&debugCtrl));
@@ -114,7 +121,6 @@ void setup(HWND hwnd, int width, int height) {
 }
 
 void frame() {
-    //TODO: Up next, need to move the preparerender logic here
 }
 
 void teardown() {
