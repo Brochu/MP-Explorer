@@ -26,53 +26,8 @@ ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 UINT frameIndex;
 UINT64 fenceValues[FRAME_COUNT];
 
-inline void ThrowIfFailed(HRESULT hr) {
-    if (FAILED(hr)) {
-        assert(false);
-    }
-}
-
-void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter) {
-    *ppAdapter = nullptr;
-    ComPtr<IDXGIAdapter1> adapter;
-    ComPtr<IDXGIFactory6> factory;
-
-    if (SUCCEEDED(pfactory->QueryInterface(IID_PPV_ARGS(&factory)))) {
-        for (UINT adapterIndex = 0;
-             SUCCEEDED(factory->EnumAdapterByGpuPreference(
-                 adapterIndex,
-                 hpAdapter ? DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE : DXGI_GPU_PREFERENCE_UNSPECIFIED,
-                 IID_PPV_ARGS(&adapter)));
-             adapterIndex++)
-        {
-            DXGI_ADAPTER_DESC1 desc;
-            adapter->GetDesc1(&desc);
-            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
-                continue;
-            }
-
-            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), nullptr))) {
-                break;
-            }
-        }
-    }
-
-    if (adapter.Get() == nullptr) {
-        for (UINT adapterIndex = 0; SUCCEEDED(pfactory->EnumAdapters1(adapterIndex, &adapter)); adapterIndex++) {
-            DXGI_ADAPTER_DESC1 desc;
-            adapter->GetDesc1(&desc);
-            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
-                continue;
-            }
-
-            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), nullptr))) {
-                break;
-            }
-        }
-    }
-
-    *ppAdapter = adapter.Detach();
-}
+inline void ThrowIfFailed(HRESULT hr);
+void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter);
 
 void setup(HWND hwnd, int width, int height) {
     printf("[R-START] Preparing renderer.\n");
@@ -155,6 +110,54 @@ void frame() {
 
 void teardown() {
     printf("[R-STOP] Teardown renderer.\n");
+}
+
+inline void ThrowIfFailed(HRESULT hr) {
+    if (FAILED(hr)) {
+        assert(false);
+    }
+}
+
+void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter) {
+    *ppAdapter = nullptr;
+    ComPtr<IDXGIAdapter1> adapter;
+    ComPtr<IDXGIFactory6> factory;
+
+    if (SUCCEEDED(pfactory->QueryInterface(IID_PPV_ARGS(&factory)))) {
+        for (UINT adapterIndex = 0;
+             SUCCEEDED(factory->EnumAdapterByGpuPreference(
+                 adapterIndex,
+                 hpAdapter ? DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE : DXGI_GPU_PREFERENCE_UNSPECIFIED,
+                 IID_PPV_ARGS(&adapter)));
+             adapterIndex++)
+        {
+            DXGI_ADAPTER_DESC1 desc;
+            adapter->GetDesc1(&desc);
+            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
+                continue;
+            }
+
+            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), nullptr))) {
+                break;
+            }
+        }
+    }
+
+    if (adapter.Get() == nullptr) {
+        for (UINT adapterIndex = 0; SUCCEEDED(pfactory->EnumAdapters1(adapterIndex, &adapter)); adapterIndex++) {
+            DXGI_ADAPTER_DESC1 desc;
+            adapter->GetDesc1(&desc);
+            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
+                continue;
+            }
+
+            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), nullptr))) {
+                break;
+            }
+        }
+    }
+
+    *ppAdapter = adapter.Detach();
 }
 
 }
