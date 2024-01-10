@@ -106,6 +106,16 @@ void setup(HWND hwnd, int width, int height) {
             ));
         }
     }
+    //-------------------------
+    { // Sync Objects
+        ThrowIfFailed(device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+        fenceValues[frameIndex]++;
+
+        fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        if (fenceEvent == nullptr) {
+            assert(false);
+        }
+    }
 }
 
 void frame() {
