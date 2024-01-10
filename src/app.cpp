@@ -47,6 +47,8 @@ void step() {
 }
 
 void teardown() {
+    Render::teardown();
+
     printf("[MAIN] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);
     SDL_Quit();
