@@ -122,12 +122,7 @@ void setup(HWND hwnd, int width, int height) {
 }
 
 void frame() {
-    WaitForFence(framefence[currentbackbuffer].Get(), fencevals[currentbackbuffer], fenceevts[currentbackbuffer]);
-
-    cmdallocs[currentbackbuffer].Reset();
-
     ID3D12GraphicsCommandList *cmdlist = cmdlists[currentbackbuffer].Get();
-    cmdlist->Reset(cmdallocs[currentbackbuffer].Get(), nullptr);
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE rth {};
     rth.InitOffsetted(rtheap->GetCPUDescriptorHandleForHeapStart(), currentbackbuffer, rtvDescSize);
@@ -145,7 +140,7 @@ void frame() {
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     cmdlist->ResourceBarrier(1, &barrier);
 
-    static const float clearcol[] = { 0.042f, 0.042f, 0.042f, 1.f };
+    static const float clearcol[] = { 0.42f, 0.42f, 0.42f, 1.f };
     cmdlist->ClearRenderTargetView(rth, clearcol, 0, nullptr);
 
     D3D12_RESOURCE_BARRIER present = {};
@@ -160,7 +155,11 @@ void frame() {
 
     ID3D12CommandList *commands[] = { cmdlist };
     queue->ExecuteCommandLists(1, commands);
+
     swapchain->Present(1, 0);
+    WaitForFence(framefence[currentbackbuffer].Get(), fencevals[currentbackbuffer], fenceevts[currentbackbuffer]);
+    cmdallocs[currentbackbuffer].Reset();
+    //cmdlist->Reset(cmdallocs[currentbackbuffer].Get(), nullptr);
 
     const uint64_t value = currentfenceval;
     queue->Signal(framefence[currentbackbuffer].Get(), value);

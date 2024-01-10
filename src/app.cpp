@@ -42,6 +42,8 @@ void step() {
             running = false;
         }
     }
+
+    Render::frame();
 }
 
 void teardown() {
