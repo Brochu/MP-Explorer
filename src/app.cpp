@@ -33,7 +33,9 @@ void setup() {
     Render::setup(hwnd, WIDTH, HEIGHT);
 }
 
-void step() { //TODO: Input handling && app logic?
+void step() {
+    //TODO: Add some Tracy reporting here, root of frame logic
+
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
         if(e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
