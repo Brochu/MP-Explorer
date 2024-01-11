@@ -191,8 +191,10 @@ void setup(HWND hwnd, int width, int height) {
 }
 
 void frame() {
-    //ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
-    //ThrowIfFailed(cmdLists[frameIndex]->Reset(cmdAllocs[frameIndex].Get(), nullptr));
+    ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
+    ThrowIfFailed(cmdLists[frameIndex]->Reset(cmdAllocs[frameIndex].Get(), pso.Get()));
+    //TODO: Render logic here
+    ThrowIfFailed(cmdLists[frameIndex]->Close());
 }
 
 void teardown() {
