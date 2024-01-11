@@ -2,6 +2,7 @@
 #include <d3dx12.h>
 #include <dxgi.h>
 #include <dxgi1_6.h>
+#include <d3dcompiler.h>
 
 #include <cassert>
 #include <stdio.h>
@@ -19,9 +20,13 @@ UINT rtvDescSize;
 ComPtr<ID3D12Device> device;
 ComPtr<ID3D12CommandQueue> queue;
 ComPtr<ID3D12CommandAllocator> cmdAllocs[FRAME_COUNT];
+ComPtr<ID3D12GraphicsCommandList> cmdLists[FRAME_COUNT];
 ComPtr<IDXGISwapChain4> swapchain;
 ComPtr<ID3D12DescriptorHeap> rtvheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
+
+ComPtr<ID3D12RootSignature> root;
+ComPtr<ID3D12PipelineState> pso;
 
 UINT frameIndex;
 HANDLE fenceEvent;
@@ -117,9 +122,77 @@ void setup(HWND hwnd, int width, int height) {
             assert(false);
         }
     }
+    for (int i = 0; i < FRAME_COUNT; i++) {
+        ThrowIfFailed(device->CreateCommandList(
+            0,
+            D3D12_COMMAND_LIST_TYPE_DIRECT,
+            cmdAllocs[i].Get(),
+            nullptr,
+            IID_PPV_ARGS(&cmdLists[i])
+        ));
+        ThrowIfFailed(cmdLists[i]->Close());
+    }
+    { // Empty Root Signature
+        CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
+        rootdesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+        ComPtr<ID3DBlob> sign;
+        ComPtr<ID3DBlob> error;
+        ThrowIfFailed(D3D12SerializeRootSignature(&rootdesc, D3D_ROOT_SIGNATURE_VERSION_1, &sign, &error));
+        ThrowIfFailed(device->CreateRootSignature(
+            0,
+            sign->GetBufferPointer(),
+            sign->GetBufferSize(),
+            IID_PPV_ARGS(&root)
+        ));
+    }
+    { // Creating PSO, empty shaders? Is that valid?
+        UINT compileflags = 0;//D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+        ComPtr<ID3DBlob> vs;
+        ComPtr<ID3DBlob> ps;
+        ComPtr<ID3DBlob> error;
+        ThrowIfFailed(D3DCompileFromFile(
+            L"shaders\\shaders.hlsl",
+            nullptr, nullptr,
+            "VSMain", "vs_5_1",
+            compileflags, 0, &vs, &error
+        ));
+        ThrowIfFailed(D3DCompileFromFile(
+            L"shaders\\shaders.hlsl",
+            nullptr, nullptr,
+            "PSMain", "ps_5_1",
+            compileflags, 0, &ps, &error
+        ));
+        //char *message = (char*)error->GetBufferPointer();
+        //printf("[ERR] '%s'\n", message);
+
+        D3D12_INPUT_ELEMENT_DESC inputElem[] = {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        };
+
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC psodesc = { 0 };
+        psodesc.InputLayout = { inputElem, _countof(inputElem) };
+        psodesc.pRootSignature = root.Get();
+        psodesc.VS = CD3DX12_SHADER_BYTECODE(vs.Get());
+        psodesc.PS = CD3DX12_SHADER_BYTECODE(ps.Get());
+        psodesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+        psodesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+        psodesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+        psodesc.DepthStencilState.DepthEnable = FALSE;
+        psodesc.DepthStencilState.StencilEnable = FALSE;
+        psodesc.SampleMask = UINT_MAX;
+        psodesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+        psodesc.NumRenderTargets = 1;
+        psodesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+        psodesc.SampleDesc.Count = 1;
+        ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
+    }
 }
 
 void frame() {
+    //ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
+    //ThrowIfFailed(cmdLists[frameIndex]->Reset(cmdAllocs[frameIndex].Get(), nullptr));
 }
 
 void teardown() {
