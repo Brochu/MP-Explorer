@@ -1,8 +1,11 @@
+#include "renderer.h"
+
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <dxgi.h>
 #include <dxgi1_6.h>
-#include <d3dcompiler.h>
+#include <d3dcompiler.h> //TODO: Remove once we get more recent DXC version
+#include <dxcapi.h>
 
 #include <cassert>
 #include <stdio.h>
@@ -37,6 +40,7 @@ inline void ThrowIfFailed(HRESULT hr);
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter);
 void WaitForGPU();
 void MoveToNextFrame();
+HRESULT CompileShader();
 
 void setup(HWND hwnd, int width, int height) {
     printf("[R-START] Preparing renderer.\n");
@@ -273,6 +277,10 @@ void MoveToNextFrame() {
     }
 
     fenceValues[frameIndex] = currentFenceValue + 1;
+}
+
+HRESULT CompileShader() {
+    return 0;
 }
 
 }
