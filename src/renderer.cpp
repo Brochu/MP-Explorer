@@ -146,8 +146,9 @@ void setup(HWND hwnd, int width, int height) {
             IID_PPV_ARGS(&root)
         ));
     }
-    { // Creating PSO, empty shaders? Is that valid?
-        UINT compileflags = 0;//D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+    { // Creating PSO
+        //TODO: Look into using more recent shader compiler
+        UINT compileflags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
         ComPtr<ID3DBlob> vs;
         ComPtr<ID3DBlob> ps;
         ComPtr<ID3DBlob> error;
