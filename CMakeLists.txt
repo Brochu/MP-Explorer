@@ -42,6 +42,7 @@ set (libs
     d3dcompiler.lib
     dxgi.lib
     dxguid.lib
+    dxcompiler.lib
 
     assimp-vc143-mt.lib
     SDL2main
@@ -59,6 +60,7 @@ target_compile_options(MP-Explorer PUBLIC "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS
 target_include_directories(MP-Explorer
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/include
+        ${CMAKE_CURRENT_LIST_DIR}/include/dxc
         ${CMAKE_CURRENT_LIST_DIR}/include/imgui
         ${CMAKE_CURRENT_LIST_DIR}/include/SDL2
         ${CMAKE_CURRENT_LIST_DIR}/tracy/public/tracy
