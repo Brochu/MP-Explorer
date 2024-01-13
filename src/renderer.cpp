@@ -151,7 +151,6 @@ void setup(HWND hwnd, int width, int height) {
         ));
     }
     { // Creating PSO
-        //TODO: Look into using more recent shader compiler
         LPCWSTR file = L"shaders\\shaders.hlsl";
         ComPtr<ID3DBlob> vs;
         ComPtr<ID3DBlob> ps;
@@ -267,13 +266,11 @@ void MoveToNextFrame() {
 }
 
 HRESULT CompileShader(LPCWSTR file, LPCSTR entry, LPCSTR target, ComPtr<ID3DBlob> &shader) {
-    printf("[SHADER] file = '%ls'\n", (wchar_t*)file);
-    printf("[SHADER] entry = '%s'\n", (char*)entry);
-    printf("[SHADER] target = '%s'\n", (char*)target);
-
+    printf("[SHADER] file = '%ls'; entry = '%s'; target = '%s'\n", (wchar_t*)file, (char*)entry, (char*)target);
     UINT compileflags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
     ComPtr<ID3DBlob> error;
 
+    //TODO: Look into using more recent shader compiler
     HRESULT hr = D3DCompileFromFile(file, nullptr, nullptr, entry, target, compileflags, 0, &shader, &error);
     if (FAILED(hr)) {
         //TODO: Show error in console
