@@ -8,6 +8,7 @@ set (DEBUG_OPTIONS -g -O0)
 set (RELEASE_OPTIONS -O3)
 
 set (headers
+    ${CMAKE_CURRENT_LIST_DIR}/include/d3dx12.h
     ${CMAKE_CURRENT_LIST_DIR}/include/app.h
     ${CMAKE_CURRENT_LIST_DIR}/include/renderer.h
 )
