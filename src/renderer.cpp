@@ -40,7 +40,7 @@ inline void ThrowIfFailed(HRESULT hr);
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter);
 void WaitForGPU();
 void MoveToNextFrame();
-HRESULT CompileShader();
+HRESULT CompileShader(LPCWSTR file, LPCSTR entry, LPCSTR target, ComPtr<ID3DBlob> &shader);
 
 void setup(HWND hwnd, int width, int height) {
     printf("[R-START] Preparing renderer.\n");
@@ -152,24 +152,11 @@ void setup(HWND hwnd, int width, int height) {
     }
     { // Creating PSO
         //TODO: Look into using more recent shader compiler
-        UINT compileflags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+        LPCWSTR file = L"shaders\\shaders.hlsl";
         ComPtr<ID3DBlob> vs;
         ComPtr<ID3DBlob> ps;
-        ComPtr<ID3DBlob> error;
-        ThrowIfFailed(D3DCompileFromFile(
-            L"shaders\\shaders.hlsl",
-            nullptr, nullptr,
-            "VSMain", "vs_5_1",
-            compileflags, 0, &vs, &error
-        ));
-        ThrowIfFailed(D3DCompileFromFile(
-            L"shaders\\shaders.hlsl",
-            nullptr, nullptr,
-            "PSMain", "ps_5_1",
-            compileflags, 0, &ps, &error
-        ));
-        //char *message = (char*)error->GetBufferPointer();
-        //printf("[ERR] '%s'\n", message);
+        CompileShader(file, "VSMain", "vs_5_1", vs);
+        CompileShader(file, "PSMain", "ps_5_1", ps);
 
         D3D12_INPUT_ELEMENT_DESC inputElem[] = {
             { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -279,8 +266,24 @@ void MoveToNextFrame() {
     fenceValues[frameIndex] = currentFenceValue + 1;
 }
 
-HRESULT CompileShader() {
-    return 0;
+HRESULT CompileShader(LPCWSTR file, LPCSTR entry, LPCSTR target, ComPtr<ID3DBlob> &shader) {
+    printf("[SHADER] file = '%ls'\n", (wchar_t*)file);
+    printf("[SHADER] entry = '%s'\n", (char*)entry);
+    printf("[SHADER] target = '%s'\n", (char*)target);
+
+    UINT compileflags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+    ComPtr<ID3DBlob> error;
+
+    HRESULT hr = D3DCompileFromFile(file, nullptr, nullptr, entry, target, compileflags, 0, &shader, &error);
+    if (FAILED(hr)) {
+        //TODO: Show error in console
+        ThrowIfFailed(hr);
+    }
+    else {
+        const char *code = (const char*)shader->GetBufferPointer();
+        printf("[SHADER] code = \n%s\n\n", code);
+    }
+    return hr;
 }
 
 }
