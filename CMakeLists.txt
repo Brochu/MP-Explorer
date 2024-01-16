@@ -79,6 +79,6 @@ target_link_libraries(MP-Explorer ${libs} Tracy::TracyClient)
 
 set_target_properties(MP-Explorer
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY       "${CMAKE_CURRENT_LIST_DIR}/bin/"
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_LIST_DIR}/bin/"
+    RUNTIME_OUTPUT_DIRECTORY       "${CMAKE_CURRENT_LIST_DIR}/"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_LIST_DIR}/"
 )
