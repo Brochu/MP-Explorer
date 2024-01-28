@@ -38,3 +38,4 @@ build/
 zig-cache/
 
 compile_commands.json
+*.raddbg
