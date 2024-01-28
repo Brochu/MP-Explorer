@@ -161,7 +161,8 @@ void setup(HWND hwnd, int width, int height) {
         ThrowIfFailed(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
         ThrowIfFailed(utils->CreateDefaultIncludeHandler(&includeHandler));
 
-        std::vector<LPCWSTR> extras {
+        const UINT32 argCount = 4;
+        LPCWSTR extras[argCount] {
             DXC_ARG_PACK_MATRIX_ROW_MAJOR,
             DXC_ARG_WARNINGS_ARE_ERRORS,
             DXC_ARG_ALL_RESOURCES_BOUND,
@@ -171,7 +172,7 @@ void setup(HWND hwnd, int width, int height) {
         ComPtr<IDxcCompilerArgs> compArgs;
         ThrowIfFailed(utils->BuildArguments(
             L"???", L"VSMain", L"vs_6_6",
-            extras.data(), extras.size(),
+            extras, argCount,
             nullptr, 0, &compArgs
         ));
 
