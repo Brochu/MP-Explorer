@@ -4,8 +4,10 @@
 #include <d3dx12.h>
 #include <dxgi.h>
 #include <dxgi1_6.h>
+
 #include <d3dcompiler.h> //TODO: Remove once we get more recent DXC version
 #include <dxcapi.h>
+#include <d3d12shader.h>
 
 #include <cassert>
 #include <stdio.h>
@@ -30,6 +32,10 @@ ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 
 ComPtr<ID3D12RootSignature> root;
 ComPtr<ID3D12PipelineState> pso;
+
+ComPtr<IDxcCompiler3> compiler;
+ComPtr<IDxcUtils> utils;
+ComPtr<IDxcIncludeHandler> includeHandler;
 
 UINT frameIndex;
 HANDLE fenceEvent;
@@ -150,6 +156,49 @@ void setup(HWND hwnd, int width, int height) {
             IID_PPV_ARGS(&root)
         ));
     }
+    { // Preparing shader compiler objects
+        ThrowIfFailed(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils)));
+        ThrowIfFailed(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
+        ThrowIfFailed(utils->CreateDefaultIncludeHandler(&includeHandler));
+
+        std::vector<LPCWSTR> extras {
+            DXC_ARG_PACK_MATRIX_ROW_MAJOR,
+            DXC_ARG_WARNINGS_ARE_ERRORS,
+            DXC_ARG_ALL_RESOURCES_BOUND,
+            DXC_ARG_DEBUG
+            //TODO: Look into other arguments
+        };
+        ComPtr<IDxcCompilerArgs> compArgs;
+        ThrowIfFailed(utils->BuildArguments(
+            L"???", L"VSMain", L"vs_6_6",
+            extras.data(), extras.size(),
+            nullptr, 0, &compArgs
+        ));
+
+        ComPtr<IDxcBlobEncoding> shaderSrc{};
+        ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &shaderSrc));
+        DxcBuffer srcBuffer {
+            .Ptr = shaderSrc->GetBufferPointer(),
+            .Size = shaderSrc->GetBufferSize(),
+            .Encoding = 0u,
+        };
+
+        ComPtr<IDxcResult> compiled{};
+        ThrowIfFailed(compiler->Compile(
+            &srcBuffer,
+            compArgs->GetArguments(),
+            compArgs->GetCount(), includeHandler.Get(),
+            IID_PPV_ARGS(&compiled)
+        ));
+        printf("[RENDER] Got the compiled shader !\n");
+        HRESULT hr;
+        ThrowIfFailed(compiled->GetStatus(&hr));
+        printf("[RENDER] Status = %ld\n", hr);
+        ComPtr<IDxcBlobEncoding> err;
+        ThrowIfFailed(compiled->GetErrorBuffer(&err));
+        printf("[RENDER] Error =  %s\n", (char*)err->GetBufferPointer());
+    }
+    return; //TODO: Remove this with new shader compile is ready
     { // Creating PSO
         LPCWSTR file = L"shaders\\shaders.hlsl";
         ComPtr<ID3DBlob> vs;
