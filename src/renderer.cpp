@@ -197,6 +197,9 @@ void setup(HWND hwnd, int width, int height) {
         ComPtr<IDxcBlobEncoding> err;
         ThrowIfFailed(compiled->GetErrorBuffer(&err));
         printf("[RENDER] Error =  %s\n", (char*)err->GetBufferPointer());
+        ComPtr<IDxcBlob> res;
+        compiled->GetResult(&res);
+        printf("[RENDER] Result =  %s\n", (char*)res->GetBufferPointer());
     }
     return; //TODO: Remove this with new shader compile is ready
     { // Creating PSO
