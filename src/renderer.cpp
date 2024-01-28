@@ -22,6 +22,7 @@ CD3DX12_VIEWPORT viewport;
 CD3DX12_RECT scissor;
 UINT rtvDescSize;
 
+// Dx12 objects
 ComPtr<ID3D12Device> device;
 ComPtr<ID3D12CommandQueue> queue;
 ComPtr<ID3D12CommandAllocator> cmdAllocs[FRAME_COUNT];
@@ -33,6 +34,7 @@ ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 ComPtr<ID3D12RootSignature> root;
 ComPtr<ID3D12PipelineState> pso;
 
+// Shader Compiler objects
 ComPtr<IDxcCompiler3> compiler;
 ComPtr<IDxcUtils> utils;
 ComPtr<IDxcIncludeHandler> includeHandler;
