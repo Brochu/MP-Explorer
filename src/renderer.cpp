@@ -5,7 +5,6 @@
 #include <dxgi.h>
 #include <dxgi1_6.h>
 
-#include <d3dcompiler.h> //TODO: Remove once we get more recent DXC version
 #include <dxcapi.h>
 #include <d3d12shader.h>
 
@@ -37,7 +36,7 @@ ComPtr<ID3D12PipelineState> pso;
 // Shader Compiler objects
 ComPtr<IDxcCompiler3> compiler;
 ComPtr<IDxcUtils> utils;
-ComPtr<IDxcIncludeHandler> includeHandler;
+ComPtr<IDxcIncludeHandler> inclHandler;
 
 UINT frameIndex;
 HANDLE fenceEvent;
@@ -48,7 +47,7 @@ inline void ThrowIfFailed(HRESULT hr);
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter);
 void WaitForGPU();
 void MoveToNextFrame();
-HRESULT CompileShader(LPCWSTR file, LPCSTR entry, LPCSTR target, ComPtr<ID3DBlob> &shader);
+HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR target, ComPtr<IDxcBlob> &shader);
 
 void setup(HWND hwnd, int width, int height) {
     printf("[R-START] Preparing renderer.\n");
@@ -161,56 +160,14 @@ void setup(HWND hwnd, int width, int height) {
     { // Preparing shader compiler objects
         ThrowIfFailed(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils)));
         ThrowIfFailed(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
-        ThrowIfFailed(utils->CreateDefaultIncludeHandler(&includeHandler));
-
-        const UINT32 argCount = 4;
-        LPCWSTR extras[argCount] {
-            DXC_ARG_PACK_MATRIX_ROW_MAJOR,
-            DXC_ARG_WARNINGS_ARE_ERRORS,
-            DXC_ARG_ALL_RESOURCES_BOUND,
-            DXC_ARG_DEBUG
-            //TODO: Look into other arguments
-        };
-        ComPtr<IDxcCompilerArgs> compArgs;
-        ThrowIfFailed(utils->BuildArguments(
-            L"???", L"VSMain", L"vs_6_6",
-            extras, argCount,
-            nullptr, 0, &compArgs
-        ));
-
-        ComPtr<IDxcBlobEncoding> shaderSrc{};
-        ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &shaderSrc));
-        DxcBuffer srcBuffer {
-            .Ptr = shaderSrc->GetBufferPointer(),
-            .Size = shaderSrc->GetBufferSize(),
-            .Encoding = 0u,
-        };
-
-        ComPtr<IDxcResult> compiled{};
-        ThrowIfFailed(compiler->Compile(
-            &srcBuffer,
-            compArgs->GetArguments(),
-            compArgs->GetCount(), includeHandler.Get(),
-            IID_PPV_ARGS(&compiled)
-        ));
-        printf("[RENDER] Got the compiled shader !\n");
-        HRESULT hr;
-        ThrowIfFailed(compiled->GetStatus(&hr));
-        printf("[RENDER] Status = %ld\n", hr);
-        ComPtr<IDxcBlobEncoding> err;
-        ThrowIfFailed(compiled->GetErrorBuffer(&err));
-        printf("[RENDER] Error =  %s\n", (char*)err->GetBufferPointer());
-        ComPtr<IDxcBlob> res;
-        compiled->GetResult(&res);
-        printf("[RENDER] Result =  %s\n", (char*)res->GetBufferPointer());
+        ThrowIfFailed(utils->CreateDefaultIncludeHandler(&inclHandler));
     }
-    return; //TODO: Remove this with new shader compile is ready
     { // Creating PSO
-        LPCWSTR file = L"shaders\\shaders.hlsl";
-        ComPtr<ID3DBlob> vs;
-        ComPtr<ID3DBlob> ps;
-        CompileShader(file, "VSMain", "vs_5_1", vs);
-        CompileShader(file, "PSMain", "ps_5_1", ps);
+        ComPtr<IDxcBlobEncoding> src{};
+        ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &src));
+        ComPtr<IDxcBlob> vs, ps;
+        CompileShader(src, L"VSMain", L"vs_6_6", vs);
+        CompileShader(src, L"PSMain", L"ps_6_6", ps);
 
         D3D12_INPUT_ELEMENT_DESC inputElem[] = {
             { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -220,8 +177,8 @@ void setup(HWND hwnd, int width, int height) {
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psodesc = { 0 };
         psodesc.InputLayout = { inputElem, _countof(inputElem) };
         psodesc.pRootSignature = root.Get();
-        psodesc.VS = CD3DX12_SHADER_BYTECODE(vs.Get());
-        psodesc.PS = CD3DX12_SHADER_BYTECODE(ps.Get());
+        psodesc.VS = { .pShaderBytecode = vs->GetBufferPointer(), .BytecodeLength = vs->GetBufferSize() };
+        psodesc.PS = { .pShaderBytecode = ps->GetBufferPointer(), .BytecodeLength = ps->GetBufferSize() };
         psodesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psodesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
         psodesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
@@ -232,7 +189,8 @@ void setup(HWND hwnd, int width, int height) {
         psodesc.NumRenderTargets = 1;
         psodesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
         psodesc.SampleDesc.Count = 1;
-        ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
+        HRESULT hr = device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso));
+        printf("[RENDER] Could not create PSO: %ld", hr);
     }
 }
 
@@ -320,18 +278,33 @@ void MoveToNextFrame() {
     fenceValues[frameIndex] = currentFenceValue + 1;
 }
 
-HRESULT CompileShader(LPCWSTR file, LPCSTR entry, LPCSTR target, ComPtr<ID3DBlob> &shader) {
-    printf("[SHADER] file = '%ls'; entry = '%s'; target = '%s'\n", (wchar_t*)file, (char*)entry, (char*)target);
-    UINT compileflags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-    ComPtr<ID3DBlob> error;
+HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR target, ComPtr<IDxcBlob> &shader) {
+    printf("[SHADER] Compiling: entry = '%ls'; target = '%ls'\n", entry, target);
+    const UINT32 argCount = 4;
+    LPCWSTR extras[argCount] {
+        DXC_ARG_PACK_MATRIX_ROW_MAJOR,
+        DXC_ARG_WARNINGS_ARE_ERRORS,
+        DXC_ARG_ALL_RESOURCES_BOUND,
+        DXC_ARG_DEBUG
+        //TODO: Look into other arguments
+    };
+    ComPtr<IDxcCompilerArgs> args;
+    ThrowIfFailed(utils->BuildArguments(L"?", entry, target, extras, argCount, nullptr, 0, &args));
 
-    //TODO: Look into using more recent shader compiler
-    HRESULT hr = D3DCompileFromFile(file, nullptr, nullptr, entry, target, compileflags, 0, &shader, &error);
+    DxcBuffer buffer { .Ptr = src->GetBufferPointer(), .Size = src->GetBufferSize(), .Encoding = 0u };
+    ComPtr<IDxcResult> out{};
+    HRESULT hr = compiler->Compile(
+        &buffer,
+        args->GetArguments(), args->GetCount(),
+        inclHandler.Get(), IID_PPV_ARGS(&out)
+    );
+
     if (FAILED(hr)) {
         //TODO: Show error in console
         ThrowIfFailed(hr);
     }
     else {
+        out->GetResult(&shader);
         const char *code = (const char*)shader->GetBufferPointer();
         printf("[SHADER] code = \n%s\n\n", code);
     }
