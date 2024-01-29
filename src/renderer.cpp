@@ -166,8 +166,8 @@ void setup(HWND hwnd, int width, int height) {
         ComPtr<IDxcBlobEncoding> src{};
         ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &src));
         ComPtr<IDxcBlob> vs, ps;
-        CompileShader(src, L"VSMain", L"vs_6_6", vs);
-        CompileShader(src, L"PSMain", L"ps_6_6", ps);
+        CompileShader(src, L"VSMain", L"vs_6_5", vs);
+        CompileShader(src, L"PSMain", L"ps_6_5", ps);
 
         D3D12_INPUT_ELEMENT_DESC inputElem[] = {
             { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -189,8 +189,7 @@ void setup(HWND hwnd, int width, int height) {
         psodesc.NumRenderTargets = 1;
         psodesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
         psodesc.SampleDesc.Count = 1;
-        HRESULT hr = device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso));
-        printf("[RENDER] Could not create PSO: %ld", hr);
+        ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
     }
 }
 
