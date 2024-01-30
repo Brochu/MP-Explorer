@@ -28,6 +28,7 @@ ComPtr<ID3D12CommandAllocator> cmdAllocs[FRAME_COUNT];
 ComPtr<ID3D12GraphicsCommandList> cmdLists[FRAME_COUNT];
 ComPtr<IDXGISwapChain4> swapchain;
 ComPtr<ID3D12DescriptorHeap> rtvheap;
+ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 
 ComPtr<ID3D12RootSignature> root;
@@ -107,6 +108,12 @@ void setup(HWND hwnd, int width, int height) {
         rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvheap)));
         rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+        D3D12_DESCRIPTOR_HEAP_DESC imguiHeapDesc {};
+        imguiHeapDesc.NumDescriptors = 1;
+        imguiHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        imguiHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        ThrowIfFailed(device->CreateDescriptorHeap(&imguiHeapDesc, IID_PPV_ARGS(&imguiheap)));
     }
     //-------------------------
     { // Frame Resources
