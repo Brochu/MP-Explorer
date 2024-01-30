@@ -292,12 +292,14 @@ HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR targ
 
     DxcBuffer buffer { .Ptr = src->GetBufferPointer(), .Size = src->GetBufferSize(), .Encoding = 0u };
     ComPtr<IDxcResult> out{};
-    HRESULT hr = compiler->Compile(
+    ThrowIfFailed(compiler->Compile(
         &buffer,
         args->GetArguments(), args->GetCount(),
         inclHandler.Get(), IID_PPV_ARGS(&out)
-    );
+    ));
 
+    HRESULT hr;
+    out->GetStatus(&hr);
     if (FAILED(hr)) {
         ComPtr<IDxcBlobEncoding> err;
         out->GetErrorBuffer(&err);
