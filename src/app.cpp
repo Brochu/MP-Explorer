@@ -17,7 +17,7 @@ HWND hwnd;
 SDL_Window *window;
 
 void setup() {
-    printf("[MAIN] Setting up SDL2 ...\n");
+    printf("[APP] Setting up SDL2 ...\n");
 
     window = nullptr;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -49,7 +49,7 @@ void step() {
 void teardown() {
     Render::teardown();
 
-    printf("[MAIN] Teardown SDL2 ...\n");
+    printf("[APP] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);
     SDL_Quit();
 }

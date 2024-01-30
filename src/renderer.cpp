@@ -50,7 +50,7 @@ void MoveToNextFrame();
 HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR target, ComPtr<IDxcBlob> &shader);
 
 void setup(HWND hwnd, int width, int height) {
-    printf("[R-START] Preparing renderer.\n");
+    printf("[RENDERER] Preparing renderer.\n");
     frameIndex = 0;
     viewport = CD3DX12_VIEWPORT(0.f, 0.f, (float)width, (float)height);
     scissor = CD3DX12_RECT(0, 0, width, height);
@@ -201,7 +201,7 @@ void frame() {
 }
 
 void teardown() {
-    printf("[R-STOP] Teardown renderer.\n");
+    printf("[RENDERER] Teardown renderer.\n");
 
     WaitForGPU();
     CloseHandle(fenceEvent);
@@ -299,13 +299,15 @@ HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR targ
     );
 
     if (FAILED(hr)) {
-        //TODO: Show error in console
+        ComPtr<IDxcBlobEncoding> err;
+        out->GetErrorBuffer(&err);
+
+        printf("[SHADER] Could not compile %ls : %ls\n", entry, target);
+        printf("error: %s\n", (char*)err->GetBufferPointer());
         ThrowIfFailed(hr);
     }
     else {
         out->GetResult(&shader);
-        const char *code = (const char*)shader->GetBufferPointer();
-        printf("[SHADER] code = \n%s\n\n", code);
     }
     return hr;
 }
