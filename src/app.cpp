@@ -43,7 +43,8 @@ void step() {
         }
     }
 
-    Render::frame();
+    Render::StartFrame();
+    Render::EndFrame();
 }
 
 void teardown() {

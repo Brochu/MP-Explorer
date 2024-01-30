@@ -6,7 +6,11 @@
 namespace Render {
 
 void setup(HWND hwnd, int width, int height);
-void frame();
+void StartFrame();
+void EndFrame();
 void teardown();
+
+void UploadData();
+void RecordDraws();
 
 }

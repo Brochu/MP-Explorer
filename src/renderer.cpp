@@ -200,15 +200,17 @@ void setup(HWND hwnd, int width, int height) {
     }
 }
 
-void frame() {
+void StartFrame() {
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
     ThrowIfFailed(cmdLists[frameIndex]->Reset(cmdAllocs[frameIndex].Get(), pso.Get()));
-    //TODO: Render logic here
-    //TODO: Render debug ui here
-    //TODO: Split actual render vs. recording render commands
-    // Goal is to have the application request render commands to be recorded
-    // debug UI should have a similar process but in a separate function
+    // Other preparation steps on the command list for the frame
+    //TODO: Next step, hardcoded draw to setup camera and make sure render loop works
+    // Also render debug ui with ImGui
+}
+
+void EndFrame() {
     ThrowIfFailed(cmdLists[frameIndex]->Close());
+    //TODO: Execute the recorded command list
 }
 
 void teardown() {
@@ -216,6 +218,22 @@ void teardown() {
 
     WaitForGPU();
     CloseHandle(fenceEvent);
+}
+
+void UploadData() {
+    //TODO: Handle sending data to GPU memory
+    // Could be vertex data / texture data
+    // Wait to make sure the upload is completed?
+}
+
+void RecordDraws() {
+    //TODO: require all parameters needed to prep:
+    // PSO
+    // ROOT SIG PARAMS
+    // PUSH CONSTANTS
+    // CAMERA INFO
+    // VERTEX OFFSET + COUNT
+    // INDEX OFFSET + COUNT
 }
 
 inline void ThrowIfFailed(HRESULT hr) {
