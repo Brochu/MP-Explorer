@@ -204,6 +204,10 @@ void frame() {
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
     ThrowIfFailed(cmdLists[frameIndex]->Reset(cmdAllocs[frameIndex].Get(), pso.Get()));
     //TODO: Render logic here
+    //TODO: Render debug ui here
+    //TODO: Split actual render vs. recording render commands
+    // Goal is to have the application request render commands to be recorded
+    // debug UI should have a similar process but in a separate function
     ThrowIfFailed(cmdLists[frameIndex]->Close());
 }
 
