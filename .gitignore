@@ -35,6 +35,7 @@
 
 #-------------------
 build/
+data/
 .cache/
 zig-cache/
 
