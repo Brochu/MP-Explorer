@@ -17,6 +17,7 @@ HWND hwnd;
 SDL_Window *window;
 
 void setup() {
+    printf("[APP] Data path is setup %s\n", PATH);
     printf("[APP] Setting up SDL2 ...\n");
 
     window = nullptr;

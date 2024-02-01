@@ -84,3 +84,8 @@ set_target_properties(MP-Explorer
     RUNTIME_OUTPUT_DIRECTORY       "${CMAKE_CURRENT_LIST_DIR}/"
     RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_LIST_DIR}/"
 )
+
+target_compile_definitions(MP-Explorer
+    PRIVATE
+    PATH="${DATA_PATH}"
+)
