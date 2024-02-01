@@ -208,16 +208,28 @@ void setup(HWND hwnd, int width, int height) {
 
 void StartFrame() {
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
-    ThrowIfFailed(cmdLists[frameIndex]->Reset(cmdAllocs[frameIndex].Get(), pso.Get()));
-    // Other preparation steps on the command list for the frame
-    //TODO: Next step, hardcoded draw to setup camera and make sure render loop works
-    // Also render debug ui with ImGui
+
+    ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
+    ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), pso.Get()));
+
+    cmdlist->RSSetViewports(1, &viewport);
+    cmdlist->RSSetScissorRects(1, &scissor);
+
+    D3D12_RESOURCE_BARRIER targetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
+        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET
+    );
+    cmdlist->ResourceBarrier(1, &targetBarrier);
+
     RecordDraws();
 }
 
 void EndFrame() {
-    ThrowIfFailed(cmdLists[frameIndex]->Close());
+    D3D12_RESOURCE_BARRIER presentBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT
+    );
+    cmdLists[frameIndex]->ResourceBarrier(1, &presentBarrier);
 
+    ThrowIfFailed(cmdLists[frameIndex]->Close());
     ID3D12CommandList *ppCmdList[] { cmdLists[frameIndex].Get() };
     queue->ExecuteCommandLists(_countof(ppCmdList), ppCmdList);
 
@@ -275,14 +287,6 @@ void RecordDraws() {
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
     cmdlist->SetGraphicsRootSignature(root.Get());
-    cmdlist->RSSetViewports(1, &viewport);
-    cmdlist->RSSetScissorRects(1, &scissor);
-
-    D3D12_RESOURCE_BARRIER targetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
-        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET
-    );
-    cmdlist->ResourceBarrier(1, &targetBarrier);
-
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
     cmdlist->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
@@ -291,11 +295,6 @@ void RecordDraws() {
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdlist->IASetVertexBuffers(0, 1, &vertexBufferView);
     cmdlist->DrawInstanced(3, 1, 0, 0);
-
-    D3D12_RESOURCE_BARRIER presentBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT
-    );
-    cmdlist->ResourceBarrier(1, &presentBarrier);
 }
 
 inline void ThrowIfFailed(HRESULT hr) {
