@@ -153,7 +153,7 @@ void setup(HWND hwnd, int width, int height) {
         ));
         ThrowIfFailed(cmdLists[i]->Close());
     }
-    { // Empty Root Signature
+    { // Empty Root Signature; Need to create this when requested by app
         CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
         rootdesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
@@ -172,7 +172,7 @@ void setup(HWND hwnd, int width, int height) {
         ThrowIfFailed(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
         ThrowIfFailed(utils->CreateDefaultIncludeHandler(&inclHandler));
     }
-    { // Creating PSO
+    { // Creating PSO; Need to create this when requested by app
         ComPtr<IDxcBlobEncoding> src{};
         ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &src));
         ComPtr<IDxcBlob> vs, ps;
@@ -236,6 +236,7 @@ void UploadData() {
     //TODO: Handle sending data to GPU memory
     // Could be vertex data / texture data
     // Wait to make sure the upload is completed?
+    // Should be called from app.
     Vertex tri[] = {
         { {0.f, 0.25f, 0.f}, {1.f, 0.f} },
         { {0.25f, -0.25f, 0.f}, {0.f, 1.f} },
@@ -270,6 +271,7 @@ void RecordDraws() {
     // CAMERA INFO
     // VERTEX OFFSET + COUNT
     // INDEX OFFSET + COUNT
+    // Should be called from app
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
     cmdlist->SetGraphicsRootSignature(root.Get());
