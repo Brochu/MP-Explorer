@@ -31,6 +31,9 @@ ComPtr<ID3D12DescriptorHeap> rtvheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 
+ComPtr<ID3D12Resource> vertexBuffer;
+D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+
 ComPtr<ID3D12RootSignature> root;
 ComPtr<ID3D12PipelineState> pso;
 
@@ -198,6 +201,9 @@ void setup(HWND hwnd, int width, int height) {
         psodesc.SampleDesc.Count = 1;
         ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
     }
+
+    UploadData();
+    WaitForGPU();
 }
 
 void StartFrame() {
@@ -206,11 +212,17 @@ void StartFrame() {
     // Other preparation steps on the command list for the frame
     //TODO: Next step, hardcoded draw to setup camera and make sure render loop works
     // Also render debug ui with ImGui
+    RecordDraws();
 }
 
 void EndFrame() {
     ThrowIfFailed(cmdLists[frameIndex]->Close());
-    //TODO: Execute the recorded command list
+
+    ID3D12CommandList *ppCmdList[] { cmdLists[frameIndex].Get() };
+    queue->ExecuteCommandLists(_countof(ppCmdList), ppCmdList);
+
+    ThrowIfFailed(swapchain->Present(1, 0));
+    MoveToNextFrame();
 }
 
 void teardown() {
@@ -224,6 +236,30 @@ void UploadData() {
     //TODO: Handle sending data to GPU memory
     // Could be vertex data / texture data
     // Wait to make sure the upload is completed?
+    Vertex tri[] = {
+        { {0.f, 0.25f, 0.f}, {1.f, 0.f} },
+        { {0.25f, -0.25f, 0.f}, {0.f, 1.f} },
+        { {-0.25f, -0.25f, 0.f}, {1.f, 1.f} },
+    };
+
+    const UINT vertBufferSize = sizeof(tri);
+    D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+    D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(vertBufferSize);
+    ThrowIfFailed(device->CreateCommittedResource(
+        &prop, D3D12_HEAP_FLAG_NONE,
+        &desc, D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr, IID_PPV_ARGS(&vertexBuffer)
+    ));
+
+    UINT8 *pVertDataBegin;
+    CD3DX12_RANGE readRange(0, 0);
+    ThrowIfFailed(vertexBuffer->Map(0, &readRange, (void**)&pVertDataBegin));
+    memcpy(pVertDataBegin, tri, vertBufferSize);
+    vertexBuffer->Unmap(0, nullptr);
+
+    vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
+    vertexBufferView.SizeInBytes = vertBufferSize;
+    vertexBufferView.StrideInBytes = sizeof(Vertex);
 }
 
 void RecordDraws() {
@@ -234,6 +270,30 @@ void RecordDraws() {
     // CAMERA INFO
     // VERTEX OFFSET + COUNT
     // INDEX OFFSET + COUNT
+    ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
+
+    cmdlist->SetGraphicsRootSignature(root.Get());
+    cmdlist->RSSetViewports(1, &viewport);
+    cmdlist->RSSetScissorRects(1, &scissor);
+
+    D3D12_RESOURCE_BARRIER targetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
+        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET
+    );
+    cmdlist->ResourceBarrier(1, &targetBarrier);
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
+    cmdlist->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
+    const float clear[] { 0.f, 0.2f, 0.4f, 1.f };
+    cmdlist->ClearRenderTargetView(rtvHandle, clear, 0, nullptr);
+    cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    cmdlist->IASetVertexBuffers(0, 1, &vertexBufferView);
+    cmdlist->DrawInstanced(3, 1, 0, 0);
+
+    D3D12_RESOURCE_BARRIER presentBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT
+    );
+    cmdlist->ResourceBarrier(1, &presentBarrier);
 }
 
 inline void ThrowIfFailed(HRESULT hr) {
