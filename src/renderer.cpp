@@ -9,7 +9,6 @@
 #include <d3d12shader.h>
 
 #include <cassert>
-#include <stdio.h>
 #include <wrl.h>
 
 #define FRAME_COUNT 2
@@ -201,9 +200,6 @@ void setup(HWND hwnd, int width, int height) {
         psodesc.SampleDesc.Count = 1;
         ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
     }
-
-    UploadData();
-    WaitForGPU();
 }
 
 void StartFrame() {
@@ -244,18 +240,12 @@ void teardown() {
     CloseHandle(fenceEvent);
 }
 
-void UploadData() {
-    //TODO: Handle sending data to GPU memory
-    // Could be vertex data / texture data
-    // Wait to make sure the upload is completed?
-    // Should be called from app.
-    Vertex tri[] = {
-        { {0.f, 0.25f, 0.f}, {1.f, 0.f} },
-        { {0.25f, -0.25f, 0.f}, {0.f, 1.f} },
-        { {-0.25f, -0.25f, 0.f}, {1.f, 1.f} },
-    };
+void UploadVertexData(std::span<Vertex> upload, uint64_t &startIndex, size_t &drawCount) {
+    //TODO: Handle multiple mesh uploads
+    startIndex = 0;
+    drawCount = upload.size();
 
-    const UINT vertBufferSize = sizeof(tri);
+    const UINT vertBufferSize = sizeof(Vertex) * (UINT)upload.size();
     D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
     D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(vertBufferSize);
     ThrowIfFailed(device->CreateCommittedResource(
@@ -263,16 +253,19 @@ void UploadData() {
         &desc, D3D12_RESOURCE_STATE_GENERIC_READ,
         nullptr, IID_PPV_ARGS(&vertexBuffer)
     ));
+    //TODO: Try to convert committed resources into placed resources for vertex buffers
 
     UINT8 *pVertDataBegin;
     CD3DX12_RANGE readRange(0, 0);
     ThrowIfFailed(vertexBuffer->Map(0, &readRange, (void**)&pVertDataBegin));
-    memcpy(pVertDataBegin, tri, vertBufferSize);
+    memcpy(pVertDataBegin, upload.data(), vertBufferSize);
     vertexBuffer->Unmap(0, nullptr);
 
     vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
     vertexBufferView.SizeInBytes = vertBufferSize;
     vertexBufferView.StrideInBytes = sizeof(Vertex);
+
+    WaitForGPU();
 }
 
 void RecordDraws() {

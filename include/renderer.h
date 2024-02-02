@@ -4,20 +4,21 @@
 #include <windows.h>
 #include <DirectXMath.h>
 
-namespace Render {
+#include <span>
 
-using namespace DirectX;
 struct Vertex {
-    XMFLOAT3 pos;
-    XMFLOAT2 tex;
+    DirectX::XMFLOAT3 pos;
+    DirectX::XMFLOAT2 tex;
 };
+
+namespace Render {
 
 void setup(HWND hwnd, int width, int height);
 void StartFrame();
 void EndFrame();
 void teardown();
 
-void UploadData();
+void UploadVertexData(std::span<Vertex> upload, uint64_t &startIndex, size_t &drawCount);
 void RecordDraws();
 
 }
