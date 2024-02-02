@@ -16,16 +16,15 @@ bool running = true;
 HWND hwnd;
 SDL_Window *window;
 
-uint64_t rootSigIndex = 0;
-uint64_t PSOIndex = 0;
+UINT64 rootSigIndex = 0;
+UINT64 PSOIndex = 0;
 
 Vertex tri[] = {
     { {0.f, 0.25f, 0.f}, {1.f, 0.f} },
     { {0.25f, -0.25f, 0.f}, {0.f, 1.f} },
     { {-0.25f, -0.25f, 0.f}, {1.f, 1.f} },
 };
-uint64_t startIndex = 0;
-size_t drawCount = 0;
+Draws draws;
 
 Camera cam;
 
@@ -48,7 +47,8 @@ void setup() {
 
     rootSigIndex = Render::CreateRootSignature();
     PSOIndex = Render::CreatePSO();
-    Render::UploadVertexData(tri, startIndex, drawCount);
+    UploadData verts[1] { {tri} }; //TODO: Is there a better way to handle this? Try with real data?
+    Render::UploadVertexData(verts, draws);
 }
 
 void step() {

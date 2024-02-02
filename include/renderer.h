@@ -5,10 +5,20 @@
 #include <DirectXMath.h>
 
 #include <span>
+#include <vector>
 
 struct Vertex {
     DirectX::XMFLOAT3 pos;
     DirectX::XMFLOAT2 tex;
+};
+
+struct UploadData {
+    std::span<Vertex> verts;
+};
+
+struct Draws {
+    std::vector<UINT64> startIndex;
+    std::vector<UINT64> vertCount;
 };
 
 struct Camera {
@@ -29,9 +39,9 @@ void StartFrame();
 void EndFrame();
 void teardown();
 
-uint64_t CreateRootSignature();
-uint64_t CreatePSO();
-void UploadVertexData(std::span<Vertex> upload, uint64_t &startIndex, size_t &drawCount);
+UINT64 CreateRootSignature();
+UINT64 CreatePSO();
+void UploadVertexData(std::span<UploadData> uploadData, Draws &draws);
 
 void UseCamera(Camera &cam);
 void RecordDraws();

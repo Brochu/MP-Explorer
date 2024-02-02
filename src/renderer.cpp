@@ -197,7 +197,7 @@ void teardown() {
     CloseHandle(fenceEvent);
 }
 
-uint64_t CreateRootSignature() {
+UINT64 CreateRootSignature() {
     //TODO: Be able to handle creating multiple root signatures
     // Or have a set of root signatures ready?
     CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
@@ -215,7 +215,7 @@ uint64_t CreateRootSignature() {
     return 0;
 }
 
-uint64_t CreatePSO() {
+UINT64 CreatePSO() {
     //TODO: Be able to handle creating multiple PSOs. Need to provide the shaders and states
     // Store the PSOs and prepare to sort draws based on PSOs
     ComPtr<IDxcBlobEncoding> src{};
@@ -249,12 +249,21 @@ uint64_t CreatePSO() {
     return 0;
 }
 
-void UploadVertexData(std::span<Vertex> upload, uint64_t &startIndex, size_t &drawCount) {
-    //TODO: Handle multiple mesh uploads
-    startIndex = 0;
-    drawCount = upload.size();
+void UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
+    draws.startIndex.resize(uploadData.size());
+    draws.vertCount.resize(uploadData.size());
 
-    const UINT vertBufferSize = sizeof(Vertex) * (UINT)upload.size();
+    UINT64 num = 0;
+    Vertex verts[1024];
+    for (int i = 0; i < uploadData.size(); i++) {
+        draws.startIndex[i] = num;
+        draws.vertCount[i] = uploadData[i].verts.size();
+
+        memcpy(&verts[num], uploadData[i].verts.data(), sizeof(Vertex) * draws.vertCount[i]);
+        num += draws.vertCount[i];
+    }
+
+    const UINT vertBufferSize = sizeof(Vertex) * (UINT)num;
     D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
     D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(vertBufferSize);
     ThrowIfFailed(device->CreateCommittedResource(
@@ -267,7 +276,7 @@ void UploadVertexData(std::span<Vertex> upload, uint64_t &startIndex, size_t &dr
     UINT8 *pVertDataBegin;
     CD3DX12_RANGE readRange(0, 0);
     ThrowIfFailed(vertexBuffer->Map(0, &readRange, (void**)&pVertDataBegin));
-    memcpy(pVertDataBegin, upload.data(), vertBufferSize);
+    memcpy(pVertDataBegin, verts, vertBufferSize);
     vertexBuffer->Unmap(0, nullptr);
 
     vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
