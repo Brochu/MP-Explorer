@@ -198,6 +198,8 @@ void teardown() {
 }
 
 uint64_t CreateRootSignature() {
+    //TODO: Be able to handle creating multiple root signatures
+    // Or have a set of root signatures ready?
     CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
     rootdesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
@@ -214,6 +216,8 @@ uint64_t CreateRootSignature() {
 }
 
 uint64_t CreatePSO() {
+    //TODO: Be able to handle creating multiple PSOs. Need to provide the shaders and states
+    // Store the PSOs and prepare to sort draws based on PSOs
     ComPtr<IDxcBlobEncoding> src{};
     ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &src));
     ComPtr<IDxcBlob> vs, ps;
