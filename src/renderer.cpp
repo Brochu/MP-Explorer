@@ -288,7 +288,6 @@ void RecordDraws() {
     // PSO
     // ROOT SIG PARAMS
     // PUSH CONSTANTS
-    // CAMERA INFO
     // VERTEX OFFSET + COUNT
     // INDEX OFFSET + COUNT
     // Should be called from app
