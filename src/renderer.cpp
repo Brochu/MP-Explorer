@@ -131,6 +131,15 @@ void setup(HWND hwnd, int width, int height) {
                 D3D12_COMMAND_LIST_TYPE_DIRECT,
                 IID_PPV_ARGS(&cmdAllocs[i])
             ));
+
+            ThrowIfFailed(device->CreateCommandList(
+                0,
+                D3D12_COMMAND_LIST_TYPE_DIRECT,
+                cmdAllocs[i].Get(),
+                nullptr,
+                IID_PPV_ARGS(&cmdLists[i])
+            ));
+            ThrowIfFailed(cmdLists[i]->Close());
         }
     }
     //-------------------------
@@ -142,16 +151,6 @@ void setup(HWND hwnd, int width, int height) {
         if (fenceEvent == nullptr) {
             assert(false);
         }
-    }
-    for (int i = 0; i < FRAME_COUNT; i++) {
-        ThrowIfFailed(device->CreateCommandList(
-            0,
-            D3D12_COMMAND_LIST_TYPE_DIRECT,
-            cmdAllocs[i].Get(),
-            nullptr,
-            IID_PPV_ARGS(&cmdLists[i])
-        ));
-        ThrowIfFailed(cmdLists[i]->Close());
     }
     { // Preparing shader compiler objects
         ThrowIfFailed(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils)));
