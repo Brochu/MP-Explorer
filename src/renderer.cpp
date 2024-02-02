@@ -152,53 +152,10 @@ void setup(HWND hwnd, int width, int height) {
         ));
         ThrowIfFailed(cmdLists[i]->Close());
     }
-    { // Empty Root Signature; Need to create this when requested by app
-        CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
-        rootdesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-        ComPtr<ID3DBlob> sign;
-        ComPtr<ID3DBlob> error;
-        ThrowIfFailed(D3D12SerializeRootSignature(&rootdesc, D3D_ROOT_SIGNATURE_VERSION_1, &sign, &error));
-        ThrowIfFailed(device->CreateRootSignature(
-            0,
-            sign->GetBufferPointer(),
-            sign->GetBufferSize(),
-            IID_PPV_ARGS(&root)
-        ));
-    }
     { // Preparing shader compiler objects
         ThrowIfFailed(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils)));
         ThrowIfFailed(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
         ThrowIfFailed(utils->CreateDefaultIncludeHandler(&inclHandler));
-    }
-    { // Creating PSO; Need to create this when requested by app
-        ComPtr<IDxcBlobEncoding> src{};
-        ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &src));
-        ComPtr<IDxcBlob> vs, ps;
-        CompileShader(src, L"VSMain", L"vs_6_5", vs);
-        CompileShader(src, L"PSMain", L"ps_6_5", ps);
-
-        D3D12_INPUT_ELEMENT_DESC inputElem[] = {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        };
-
-        D3D12_GRAPHICS_PIPELINE_STATE_DESC psodesc = { 0 };
-        psodesc.InputLayout = { inputElem, _countof(inputElem) };
-        psodesc.pRootSignature = root.Get();
-        psodesc.VS = { .pShaderBytecode = vs->GetBufferPointer(), .BytecodeLength = vs->GetBufferSize() };
-        psodesc.PS = { .pShaderBytecode = ps->GetBufferPointer(), .BytecodeLength = ps->GetBufferSize() };
-        psodesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-        psodesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-        psodesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-        psodesc.DepthStencilState.DepthEnable = FALSE;
-        psodesc.DepthStencilState.StencilEnable = FALSE;
-        psodesc.SampleMask = UINT_MAX;
-        psodesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        psodesc.NumRenderTargets = 1;
-        psodesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-        psodesc.SampleDesc.Count = 1;
-        ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
     }
 }
 
@@ -206,7 +163,7 @@ void StartFrame() {
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
 
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-    ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), pso.Get()));
+    ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), nullptr));
 
     cmdlist->RSSetViewports(1, &viewport);
     cmdlist->RSSetScissorRects(1, &scissor);
@@ -238,6 +195,54 @@ void teardown() {
 
     WaitForGPU();
     CloseHandle(fenceEvent);
+}
+
+uint64_t CreateRootSignature() {
+    CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
+    rootdesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+    ComPtr<ID3DBlob> sign;
+    ComPtr<ID3DBlob> error;
+    ThrowIfFailed(D3D12SerializeRootSignature(&rootdesc, D3D_ROOT_SIGNATURE_VERSION_1, &sign, &error));
+    ThrowIfFailed(device->CreateRootSignature(
+        0,
+        sign->GetBufferPointer(),
+        sign->GetBufferSize(),
+        IID_PPV_ARGS(&root)
+    ));
+    return 0;
+}
+
+uint64_t CreatePSO() {
+    ComPtr<IDxcBlobEncoding> src{};
+    ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &src));
+    ComPtr<IDxcBlob> vs, ps;
+    CompileShader(src, L"VSMain", L"vs_6_5", vs);
+    CompileShader(src, L"PSMain", L"ps_6_5", ps);
+
+    D3D12_INPUT_ELEMENT_DESC inputElem[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    };
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psodesc = { 0 };
+    psodesc.InputLayout = { inputElem, _countof(inputElem) };
+    psodesc.pRootSignature = root.Get();
+    psodesc.VS = { .pShaderBytecode = vs->GetBufferPointer(), .BytecodeLength = vs->GetBufferSize() };
+    psodesc.PS = { .pShaderBytecode = ps->GetBufferPointer(), .BytecodeLength = ps->GetBufferSize() };
+    psodesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+    psodesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+    psodesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+    psodesc.DepthStencilState.DepthEnable = FALSE;
+    psodesc.DepthStencilState.StencilEnable = FALSE;
+    psodesc.SampleMask = UINT_MAX;
+    psodesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    psodesc.NumRenderTargets = 1;
+    psodesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+    psodesc.SampleDesc.Count = 1;
+    ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
+
+    return 0;
 }
 
 void UploadVertexData(std::span<Vertex> upload, uint64_t &startIndex, size_t &drawCount) {
@@ -280,6 +285,8 @@ void RecordDraws() {
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
     cmdlist->SetGraphicsRootSignature(root.Get());
+    cmdlist->SetPipelineState(pso.Get());
+
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
     cmdlist->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 

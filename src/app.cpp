@@ -16,12 +16,14 @@ bool running = true;
 HWND hwnd;
 SDL_Window *window;
 
+uint64_t rootSigIndex = 0;
+uint64_t PSOIndex = 0;
+
 Vertex tri[] = {
     { {0.f, 0.25f, 0.f}, {1.f, 0.f} },
     { {0.25f, -0.25f, 0.f}, {0.f, 1.f} },
     { {-0.25f, -0.25f, 0.f}, {1.f, 1.f} },
 };
-
 uint64_t startIndex = 0;
 size_t drawCount = 0;
 
@@ -41,6 +43,9 @@ void setup() {
 
     hwnd = GetActiveWindow();
     Render::setup(hwnd, WIDTH, HEIGHT);
+
+    rootSigIndex = Render::CreateRootSignature();
+    PSOIndex = Render::CreatePSO();
     Render::UploadVertexData(tri, startIndex, drawCount);
 }
 

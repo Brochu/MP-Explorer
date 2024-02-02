@@ -18,6 +18,8 @@ void StartFrame();
 void EndFrame();
 void teardown();
 
+uint64_t CreateRootSignature();
+uint64_t CreatePSO();
 void UploadVertexData(std::span<Vertex> upload, uint64_t &startIndex, size_t &drawCount);
 void RecordDraws();
 
