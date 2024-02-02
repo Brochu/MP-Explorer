@@ -254,7 +254,7 @@ void UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
     draws.vertCount.resize(uploadData.size());
 
     UINT64 num = 0;
-    Vertex verts[1024];
+    Vertex verts[1024]; //TODO: Look into if there's a better default value
     for (int i = 0; i < uploadData.size(); i++) {
         draws.startIndex[i] = num;
         draws.vertCount[i] = uploadData[i].verts.size();
