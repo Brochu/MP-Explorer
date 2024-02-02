@@ -15,6 +15,7 @@
 
 namespace Render {
 using namespace Microsoft::WRL;
+using namespace DirectX;
 
 CD3DX12_VIEWPORT viewport;
 CD3DX12_RECT scissor;
@@ -271,6 +272,15 @@ void UploadVertexData(std::span<Vertex> upload, uint64_t &startIndex, size_t &dr
     vertexBufferView.StrideInBytes = sizeof(Vertex);
 
     WaitForGPU();
+}
+
+void UseCamera(Camera &cam) {
+    //TODO: Prepare and upload camera matrix
+    // Bind camera data to be used for next draws
+
+    //M: Rendered object won't move, so model matrix is XMMatrixIdentity
+    //V: XMMatrixLookToLH(FXMVECTOR EyePosition, FXMVECTOR EyeDirection, FXMVECTOR UpDirection)
+    //P: XMMatrixPerspectiveFovLH(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
 }
 
 void RecordDraws() {
