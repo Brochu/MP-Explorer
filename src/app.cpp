@@ -27,6 +27,8 @@ Vertex tri[] = {
 uint64_t startIndex = 0;
 size_t drawCount = 0;
 
+Camera cam;
+
 void setup() {
     printf("[APP] Data path is setup %s\n", PATH);
     printf("[APP] Setting up SDL2 ...\n");
