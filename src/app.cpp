@@ -6,6 +6,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <filesystem>
+
 namespace App {
 #define WIDTH 1024
 #define HEIGHT 768
@@ -30,6 +32,9 @@ Camera cam;
 
 void setup() {
     printf("[APP] Data path is setup %s\n", PATH);
+    for (const auto &entry : std::filesystem::directory_iterator(PATH)) {
+        printf(" - '%ls'\n", entry.path().c_str());
+    }
     printf("[APP] Setting up SDL2 ...\n");
 
     window = nullptr;
