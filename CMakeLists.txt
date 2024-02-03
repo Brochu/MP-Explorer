@@ -17,7 +17,7 @@ set (imgui_headers
     ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imconfig.h
     ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imgui.h
     ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imgui_impl_dx12.h
-    ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imgui_impl_win32.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imgui_impl_sdl.h
     ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imgui_internal.h
     ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imstb_rectpack.h
     ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imstb_textedit.h
@@ -35,7 +35,7 @@ set (imgui_source
     ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui_demo.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui_draw.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui_impl_dx12.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui_impl_win32.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui_impl_sdl.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui_tables.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui_widgets.cpp
 )
