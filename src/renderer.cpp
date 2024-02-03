@@ -11,6 +11,8 @@
 #include <cassert>
 #include <wrl.h>
 
+#include "imgui_impl_dx12.h"
+
 #define FRAME_COUNT 2
 
 namespace Render {
@@ -159,6 +161,14 @@ void setup(HWND hwnd, int width, int height) {
     }
 }
 
+void initImGui() {
+    ImGui_ImplDX12_Init(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM,
+        imguiheap.Get(),
+        imguiheap->GetCPUDescriptorHandleForHeapStart(),
+        imguiheap->GetGPUDescriptorHandleForHeapStart()
+    );
+}
+
 void StartFrame() {
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
 
@@ -173,10 +183,15 @@ void StartFrame() {
     );
     cmdlist->ResourceBarrier(1, &targetBarrier);
 
+    ImGui_ImplDX12_NewFrame();
     RecordDraws();
 }
 
 void EndFrame() {
+    ID3D12DescriptorHeap *heaps { imguiheap.Get() };
+    cmdLists[frameIndex]->SetDescriptorHeaps(1, &heaps);
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdLists[frameIndex].Get());
+
     D3D12_RESOURCE_BARRIER presentBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT
     );
@@ -192,8 +207,9 @@ void EndFrame() {
 
 void teardown() {
     printf("[RENDERER] Teardown renderer.\n");
-
     WaitForGPU();
+
+    ImGui_ImplDX12_Shutdown();
     CloseHandle(fenceEvent);
 }
 

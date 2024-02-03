@@ -1,4 +1,5 @@
 #include "app.h"
+#include "debugui.h"
 #include "renderer.h"
 
 #include "SDL.h"
@@ -49,6 +50,7 @@ void setup() {
 
     hwnd = GetActiveWindow();
     Render::setup(hwnd, WIDTH, HEIGHT);
+    UI::setup(window);
 
     rootSigIndex = Render::CreateRootSignature();
     PSOIndex = Render::CreatePSO();
@@ -61,12 +63,15 @@ void step() {
 
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
+        UI::update(&e);
+
         if(e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
             running = false;
         }
     }
 
     Render::StartFrame();
+    UI::drawUI();
     Render::EndFrame();
 }
 

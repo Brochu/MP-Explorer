@@ -35,6 +35,7 @@ struct Camera {
 namespace Render {
 
 void setup(HWND hwnd, int width, int height);
+void initImGui();
 void StartFrame();
 void EndFrame();
 void teardown();
