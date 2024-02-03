@@ -40,4 +40,5 @@ data/
 zig-cache/
 
 compile_commands.json
+imgui.ini
 *.raddbg
