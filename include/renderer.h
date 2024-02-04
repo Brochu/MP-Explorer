@@ -45,7 +45,7 @@ UINT64 CreatePSO();
 void UploadVertexData(std::span<UploadData> uploadData, Draws &draws);
 
 void UseCamera(Camera &cam);
-void RecordDraws();
+void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex);
 
 
 }

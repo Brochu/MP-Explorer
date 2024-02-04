@@ -36,8 +36,10 @@ ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 ComPtr<ID3D12Resource> vertexBuffer;
 D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 
-ComPtr<ID3D12RootSignature> root;
-ComPtr<ID3D12PipelineState> pso;
+struct Pipelines {
+    std::vector<ComPtr<ID3D12RootSignature>> rootSigs;
+    std::vector<ComPtr<ID3D12PipelineState>> PSOs;
+} pipelines;
 
 // Shader Compiler objects
 ComPtr<IDxcCompiler3> compiler;
@@ -184,7 +186,7 @@ void StartFrame() {
     cmdlist->ResourceBarrier(1, &targetBarrier);
 
     ImGui_ImplDX12_NewFrame();
-    RecordDraws();
+    RecordDraws(0, 0); //TODO: Move this on the app side
 }
 
 void EndFrame() {
@@ -221,6 +223,7 @@ UINT64 CreateRootSignature() {
 
     ComPtr<ID3DBlob> sign;
     ComPtr<ID3DBlob> error;
+    ComPtr<ID3D12RootSignature> root;
     ThrowIfFailed(D3D12SerializeRootSignature(&rootdesc, D3D_ROOT_SIGNATURE_VERSION_1, &sign, &error));
     ThrowIfFailed(device->CreateRootSignature(
         0,
@@ -228,7 +231,10 @@ UINT64 CreateRootSignature() {
         sign->GetBufferSize(),
         IID_PPV_ARGS(&root)
     ));
-    return 0;
+
+    UINT64 index = pipelines.rootSigs.size();
+    pipelines.rootSigs.push_back(root);
+    return index;
 }
 
 UINT64 CreatePSO() {
@@ -245,9 +251,10 @@ UINT64 CreatePSO() {
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
 
+    ComPtr<ID3D12PipelineState> pso;
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psodesc = { 0 };
     psodesc.InputLayout = { inputElem, _countof(inputElem) };
-    psodesc.pRootSignature = root.Get();
+    psodesc.pRootSignature = pipelines.rootSigs[0].Get();
     psodesc.VS = { .pShaderBytecode = vs->GetBufferPointer(), .BytecodeLength = vs->GetBufferSize() };
     psodesc.PS = { .pShaderBytecode = ps->GetBufferPointer(), .BytecodeLength = ps->GetBufferSize() };
     psodesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -262,7 +269,9 @@ UINT64 CreatePSO() {
     psodesc.SampleDesc.Count = 1;
     ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
 
-    return 0;
+    UINT64 index = pipelines.PSOs.size();
+    pipelines.PSOs.push_back(pso);
+    return index;
 }
 
 void UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
@@ -311,7 +320,7 @@ void UseCamera(Camera &cam) {
     //P: XMMatrixPerspectiveFovLH(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
 }
 
-void RecordDraws() {
+void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex) {
     //TODO: require all parameters needed to prep:
     // PSO
     // ROOT SIG PARAMS
@@ -321,8 +330,8 @@ void RecordDraws() {
     // Should be called from app
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
-    cmdlist->SetGraphicsRootSignature(root.Get());
-    cmdlist->SetPipelineState(pso.Get());
+    cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
+    cmdlist->SetPipelineState(pipelines.PSOs[psoIndex].Get());
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
     cmdlist->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
