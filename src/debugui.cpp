@@ -31,6 +31,7 @@ void drawUI() {
 
     if (showDemo) {
         ImGui::ShowDemoWindow(&showDemo);
+        //TODO: More debug controls here
     }
     ImGui::Render();
 }
