@@ -40,7 +40,7 @@ set (imgui_source
     ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui_widgets.cpp
 )
 set (tracy_source
-    ${CMAKE_CURRENT_LIST_DIR}/src/tracy/TracyClient.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/tracy/TracyClient.cpp
 )
 
 set (libs
@@ -70,7 +70,7 @@ target_include_directories(MP-Explorer
         ${CMAKE_CURRENT_LIST_DIR}/include/dxc
         ${CMAKE_CURRENT_LIST_DIR}/include/imgui
         ${CMAKE_CURRENT_LIST_DIR}/include/SDL2
-        ${CMAKE_CURRENT_LIST_DIR}/include/tracy
+        ${CMAKE_CURRENT_LIST_DIR}/tracy/tracy #??? don't like that
 )
 target_link_directories(MP-Explorer
     PRIVATE
