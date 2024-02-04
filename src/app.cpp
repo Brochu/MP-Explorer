@@ -74,6 +74,8 @@ void step() {
     Render::StartFrame();
     UI::drawUI();
     Render::EndFrame();
+
+    FrameMark;
 }
 
 void teardown() {

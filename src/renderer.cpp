@@ -4,7 +4,6 @@
 #include <d3dx12.h>
 #include <dxgi.h>
 #include <dxgi1_6.h>
-
 #include <dxcapi.h>
 #include <d3d12shader.h>
 
@@ -12,6 +11,7 @@
 #include <wrl.h>
 
 #include "imgui_impl_dx12.h"
+#include "TracyD3D12.hpp"
 
 #define FRAME_COUNT 2
 
@@ -50,6 +50,8 @@ UINT frameIndex;
 HANDLE fenceEvent;
 ComPtr<ID3D12Fence> fence;
 UINT64 fenceValues[FRAME_COUNT];
+
+TracyD3D12Ctx ctx;
 
 inline void ThrowIfFailed(HRESULT hr);
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter);
@@ -161,6 +163,7 @@ void setup(HWND hwnd, int width, int height) {
         ThrowIfFailed(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
         ThrowIfFailed(utils->CreateDefaultIncludeHandler(&inclHandler));
     }
+    ctx = TracyD3D12Context(device.Get(), queue.Get());
 }
 
 void initImGui() {
@@ -211,6 +214,7 @@ void teardown() {
     printf("[RENDERER] Teardown renderer.\n");
     WaitForGPU();
 
+    TracyD3D12Destroy(ctx);
     ImGui_ImplDX12_Shutdown();
     CloseHandle(fenceEvent);
 }
@@ -400,6 +404,8 @@ void WaitForGPU() {
 }
 
 void MoveToNextFrame() {
+    TracyD3D12NewFrame(ctx);
+
     const UINT64 currentFenceValue = fenceValues[frameIndex];
     ThrowIfFailed(queue->Signal(fence.Get(), currentFenceValue));
 
