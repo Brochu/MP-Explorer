@@ -3,10 +3,11 @@
 #include "renderer.h"
 
 #include "SDL.h"
+#include "Tracy.hpp"
+
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
 #include <filesystem>
 
 namespace App {
@@ -59,7 +60,7 @@ void setup() {
 }
 
 void step() {
-    //TODO: Add some Tracy reporting here, root of frame logic
+    ZoneScoped;
 
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
