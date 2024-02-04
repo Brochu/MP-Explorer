@@ -74,10 +74,11 @@ target_link_directories(MP-Explorer
 )
 
 # Tracy setup
-add_subdirectory(tracy)
-add_compile_definitions(TRACY_ENABLE=1)
+#add_subdirectory(tracy)
+#add_compile_definitions(TRACY_ENABLE=ON)
 
-target_link_libraries(MP-Explorer ${libs} Tracy::TracyClient)
+target_link_libraries(MP-Explorer ${libs})
+#target_link_libraries(MP-Explorer ${libs} Tracy::TracyClient)
 
 set_target_properties(MP-Explorer
     PROPERTIES
