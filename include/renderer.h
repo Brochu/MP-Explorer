@@ -32,6 +32,9 @@ struct Camera {
     DirectX::XMFLOAT3 up;
 };
 
+struct D3D12_ROOT_PARAMETER;
+struct D3D12_STATIC_SAMPLER_DESC;
+
 namespace Render {
 
 void setup(HWND hwnd, int width, int height);
@@ -40,7 +43,7 @@ void StartFrame();
 void EndFrame();
 void teardown();
 
-UINT64 CreateRootSignature();
+UINT64 CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers);
 UINT64 CreatePSO();
 void UploadVertexData(std::span<UploadData> uploadData, Draws &draws);
 

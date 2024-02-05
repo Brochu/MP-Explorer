@@ -219,11 +219,10 @@ void teardown() {
     CloseHandle(fenceEvent);
 }
 
-UINT64 CreateRootSignature() {
-    //TODO: Be able to handle creating multiple root signatures
-    // Or have a set of root signatures ready?
+UINT64 CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers) {
     CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
-    rootdesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+    rootdesc.Init((UINT)params.size(), params.data(), (UINT)samplers.size(), samplers.data(),
+        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> sign;
     ComPtr<ID3DBlob> error;

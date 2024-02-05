@@ -53,7 +53,7 @@ void setup() {
     Render::setup(hwnd, WIDTH, HEIGHT);
     UI::setup(window);
 
-    rootSigIndex = Render::CreateRootSignature();
+    rootSigIndex = Render::CreateRootSignature({}, {});
     PSOIndex = Render::CreatePSO();
     UploadData verts[1] { {tri} }; //TODO: Is there a better way to handle this? Try with real data?
     Render::UploadVertexData(verts, draws);
