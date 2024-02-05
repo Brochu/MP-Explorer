@@ -240,14 +240,12 @@ UINT64 CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D
     return index;
 }
 
-UINT64 CreatePSO() {
-    //TODO: Be able to handle creating multiple PSOs. Need to provide the shaders and states
-    // Store the PSOs and prepare to sort draws based on PSOs
+UINT64 CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
     ComPtr<IDxcBlobEncoding> src{};
-    ThrowIfFailed(utils->LoadFile(L"shaders\\shaders.hlsl", nullptr, &src));
+    ThrowIfFailed(utils->LoadFile(shaderFile, nullptr, &src));
     ComPtr<IDxcBlob> vs, ps;
-    CompileShader(src, L"VSMain", L"vs_6_5", vs);
-    CompileShader(src, L"PSMain", L"ps_6_5", ps);
+    CompileShader(src, vertEntry, L"vs_6_5", vs);
+    CompileShader(src, pixEntry, L"ps_6_5", ps);
 
     D3D12_INPUT_ELEMENT_DESC inputElem[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },

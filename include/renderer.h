@@ -44,7 +44,7 @@ void EndFrame();
 void teardown();
 
 UINT64 CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers);
-UINT64 CreatePSO();
+UINT64 CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
 void UploadVertexData(std::span<UploadData> uploadData, Draws &draws);
 
 void UseCamera(Camera &cam);
