@@ -20,8 +20,8 @@ bool running = true;
 HWND hwnd;
 SDL_Window *window;
 
-UINT64 rootSigIndex = 0;
-UINT64 PSOIndex = 0;
+int rootSigIndex = 0;
+int PSOIndex = 0;
 
 Vertex tri[] = {
     { {0.f, 0.25f, 0.f}, {1.f, 0.f} },
@@ -59,7 +59,7 @@ void setup() {
     Render::UploadVertexData(verts, draws);
 
     for (int i = 0; i < draws.startIndex.size(); i++) {
-        printf("[APP] draw[%i] -> (%lld, %lld)\n", i, draws.startIndex[i], draws.vertCount[i]);
+        printf("[APP] draw[%i] -> (%i, %i)\n", i, draws.startIndex[i], draws.vertCount[i]);
     }
 }
 

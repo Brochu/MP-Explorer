@@ -225,7 +225,7 @@ void teardown() {
     CloseHandle(fenceEvent);
 }
 
-UINT64 CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers) {
+int CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers) {
     CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
     rootdesc.Init((UINT)params.size(), params.data(), (UINT)samplers.size(), samplers.data(),
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
@@ -241,12 +241,12 @@ UINT64 CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D
         IID_PPV_ARGS(&root)
     ));
 
-    UINT64 index = pipelines.rootSigs.size();
+    int index = (int)pipelines.rootSigs.size();
     pipelines.rootSigs.push_back(root);
     return index;
 }
 
-UINT64 CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
+int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
     ComPtr<IDxcBlobEncoding> src{};
     ThrowIfFailed(utils->LoadFile(shaderFile, nullptr, &src));
     ComPtr<IDxcBlob> vs, ps;
@@ -276,7 +276,7 @@ UINT64 CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
     psodesc.SampleDesc.Count = 1;
     ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
 
-    UINT64 index = pipelines.PSOs.size();
+    int index = (int)pipelines.PSOs.size();
     pipelines.PSOs.push_back(pso);
     return index;
 }
@@ -285,11 +285,11 @@ void UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
     draws.startIndex.resize(uploadData.size());
     draws.vertCount.resize(uploadData.size());
 
-    UINT64 num = 0;
+    UINT num = 0;
     Vertex verts[1024]; //TODO: Look into if there's a better default value
     for (int i = 0; i < uploadData.size(); i++) {
         draws.startIndex[i] = num;
-        draws.vertCount[i] = uploadData[i].verts.size();
+        draws.vertCount[i] = (UINT)uploadData[i].verts.size();
 
         memcpy(&verts[num], uploadData[i].verts.data(), sizeof(Vertex) * draws.vertCount[i]);
         num += draws.vertCount[i];
@@ -327,14 +327,7 @@ void UseCamera(Camera &cam) {
     //P: XMMatrixPerspectiveFovLH(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
 }
 
-void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex, UINT64 startIndex, UINT64 vertexCount) {
-    //TODO: require all parameters needed to prep:
-    // PSO
-    // ROOT SIG PARAMS
-    // PUSH CONSTANTS
-    // VERTEX OFFSET + COUNT
-    // INDEX OFFSET + COUNT
-    // Should be called from app
+void RecordDraws(int rootSigIndex, int psoIndex, UINT startIndex, UINT vertexCount) {
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
     cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
@@ -342,7 +335,7 @@ void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex, UINT64 startIndex, UINT64
 
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdlist->IASetVertexBuffers(0, 1, &vertexBufferView);
-    cmdlist->DrawInstanced((UINT)vertexCount, 1, (UINT)startIndex, 0);
+    cmdlist->DrawInstanced(vertexCount, 1, startIndex, 0);
 }
 
 inline void ThrowIfFailed(HRESULT hr) {

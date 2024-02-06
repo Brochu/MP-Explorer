@@ -17,8 +17,8 @@ struct UploadData {
 };
 
 struct Draws {
-    std::vector<UINT64> startIndex;
-    std::vector<UINT64> vertCount;
+    std::vector<UINT> startIndex;
+    std::vector<UINT> vertCount;
 };
 
 struct Camera {
@@ -43,12 +43,12 @@ void StartFrame();
 void EndFrame();
 void teardown();
 
-UINT64 CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers);
-UINT64 CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
+int CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers);
+int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
 void UploadVertexData(std::span<UploadData> uploadData, Draws &draws);
 
 void UseCamera(Camera &cam);
-void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex, UINT64 startIndex, UINT64 vertexCount);
+void RecordDraws(int rootSigIndex, int psoIndex, UINT startIndex, UINT vertexCount);
 
 
 }
