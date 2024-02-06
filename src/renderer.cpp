@@ -334,6 +334,7 @@ void RecordDraws(int rootSigIndex, int psoIndex, UINT startIndex, UINT vertexCou
     cmdlist->SetPipelineState(pipelines.PSOs[psoIndex].Get());
 
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    //TODO: Store vertex buffers as struct DrawData, send param like other indices
     cmdlist->IASetVertexBuffers(0, 1, &vertexBufferView);
     cmdlist->DrawInstanced(vertexCount, 1, startIndex, 0);
 }
