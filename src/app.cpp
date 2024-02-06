@@ -22,6 +22,7 @@ SDL_Window *window;
 
 int rootSigIndex = 0;
 int PSOIndex = 0;
+int vbufferIndex = 0;
 
 Vertex tri[] = {
     { {0.f, 0.25f, 0.f}, {1.f, 0.f} },
@@ -56,7 +57,7 @@ void setup() {
     rootSigIndex = Render::CreateRootSignature({}, {});
     PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");
     UploadData verts[1] { {tri} }; //TODO: Is there a better way to handle this? Try with real data?
-    Render::UploadVertexData(verts, draws);
+    vbufferIndex = Render::UploadVertexData(verts, draws);
 
     for (int i = 0; i < draws.startIndex.size(); i++) {
         printf("[APP] draw[%i] -> (%i, %i)\n", i, draws.startIndex[i], draws.vertCount[i]);
@@ -77,7 +78,7 @@ void step() {
 
     //TODO: Check if we really need start/end frame functions
     Render::StartFrame();
-    Render::RecordDraws(rootSigIndex, PSOIndex, draws.startIndex[0], draws.vertCount[0]);
+    Render::RecordDraws(rootSigIndex, PSOIndex, vbufferIndex, draws.startIndex[0], draws.vertCount[0]);
     UI::drawUI();
     Render::EndFrame();
 

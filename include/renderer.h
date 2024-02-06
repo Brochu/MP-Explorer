@@ -45,10 +45,10 @@ void teardown();
 
 int CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers);
 int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
-void UploadVertexData(std::span<UploadData> uploadData, Draws &draws);
+int UploadVertexData(std::span<UploadData> uploadData, Draws &draws);
 
 void UseCamera(Camera &cam);
-void RecordDraws(int rootSigIndex, int psoIndex, UINT startIndex, UINT vertexCount);
+void RecordDraws(int rootSigIndex, int psoIndex, int vbufferIndex, UINT startIndex, UINT vertexCount);
 
 
 }

@@ -33,8 +33,10 @@ ComPtr<ID3D12DescriptorHeap> rtvheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 
-ComPtr<ID3D12Resource> vertexBuffer;
-D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+struct DrawData {
+    std::vector<ComPtr<ID3D12Resource>> vertBuffers;
+    std::vector<D3D12_VERTEX_BUFFER_VIEW> vertBufferViews;
+} drawData;
 
 struct Pipelines {
     std::vector<ComPtr<ID3D12RootSignature>> rootSigs;
@@ -281,7 +283,7 @@ int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
     return index;
 }
 
-void UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
+int UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
     draws.startIndex.resize(uploadData.size());
     draws.vertCount.resize(uploadData.size());
 
@@ -295,6 +297,7 @@ void UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
         num += draws.vertCount[i];
     }
 
+    ComPtr<ID3D12Resource> vertexBuffer;
     const UINT vertBufferSize = sizeof(Vertex) * (UINT)num;
     D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
     D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(vertBufferSize);
@@ -311,11 +314,16 @@ void UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
     memcpy(pVertDataBegin, verts, vertBufferSize);
     vertexBuffer->Unmap(0, nullptr);
 
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
     vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
     vertexBufferView.SizeInBytes = vertBufferSize;
     vertexBufferView.StrideInBytes = sizeof(Vertex);
 
     WaitForGPU();
+    int index = (int)drawData.vertBuffers.size();
+    drawData.vertBuffers.push_back(vertexBuffer);
+    drawData.vertBufferViews.push_back(vertexBufferView);
+    return index;
 }
 
 void UseCamera(Camera &cam) {
@@ -327,15 +335,14 @@ void UseCamera(Camera &cam) {
     //P: XMMatrixPerspectiveFovLH(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
 }
 
-void RecordDraws(int rootSigIndex, int psoIndex, UINT startIndex, UINT vertexCount) {
+void RecordDraws(int rootSigIndex, int psoIndex, int vbufferIndex, UINT startIndex, UINT vertexCount) {
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
     cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
     cmdlist->SetPipelineState(pipelines.PSOs[psoIndex].Get());
 
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    //TODO: Store vertex buffers as struct DrawData, send param like other indices
-    cmdlist->IASetVertexBuffers(0, 1, &vertexBufferView);
+    cmdlist->IASetVertexBuffers(0, 1, &drawData.vertBufferViews[vbufferIndex]);
     cmdlist->DrawInstanced(vertexCount, 1, startIndex, 0);
 }
 
