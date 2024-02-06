@@ -175,11 +175,13 @@ void initImGui() {
 }
 
 void StartFrame() {
-    ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
+    ImGui_ImplDX12_NewFrame();
 
+    ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
     ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), nullptr));
 
+    //TODO: Do we have to split this into separate function
     cmdlist->RSSetViewports(1, &viewport);
     cmdlist->RSSetScissorRects(1, &scissor);
 
@@ -188,11 +190,15 @@ void StartFrame() {
     );
     cmdlist->ResourceBarrier(1, &targetBarrier);
 
-    ImGui_ImplDX12_NewFrame();
-    RecordDraws(0, 0); //TODO: Move this on the app side
+    //TODO: Handle giving a custom render target? Or split into function
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
+    cmdlist->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+    const float clear[] { 0.f, 0.2f, 0.4f, 1.f };
+    cmdlist->ClearRenderTargetView(rtvHandle, clear, 0, nullptr);
 }
 
 void EndFrame() {
+    //TODO: Is this logic at the right spot?
     ID3D12DescriptorHeap *heaps { imguiheap.Get() };
     cmdLists[frameIndex]->SetDescriptorHeaps(1, &heaps);
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdLists[frameIndex].Get());
@@ -321,7 +327,7 @@ void UseCamera(Camera &cam) {
     //P: XMMatrixPerspectiveFovLH(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
 }
 
-void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex) {
+void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex, UINT64 startIndex, UINT64 vertexCount) {
     //TODO: require all parameters needed to prep:
     // PSO
     // ROOT SIG PARAMS
@@ -334,14 +340,9 @@ void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex) {
     cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
     cmdlist->SetPipelineState(pipelines.PSOs[psoIndex].Get());
 
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
-    cmdlist->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
-
-    const float clear[] { 0.f, 0.2f, 0.4f, 1.f };
-    cmdlist->ClearRenderTargetView(rtvHandle, clear, 0, nullptr);
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdlist->IASetVertexBuffers(0, 1, &vertexBufferView);
-    cmdlist->DrawInstanced(3, 1, 0, 0);
+    cmdlist->DrawInstanced((UINT)vertexCount, 1, (UINT)startIndex, 0);
 }
 
 inline void ThrowIfFailed(HRESULT hr) {

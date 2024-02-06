@@ -57,6 +57,10 @@ void setup() {
     PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");
     UploadData verts[1] { {tri} }; //TODO: Is there a better way to handle this? Try with real data?
     Render::UploadVertexData(verts, draws);
+
+    for (int i = 0; i < draws.startIndex.size(); i++) {
+        printf("[APP] draw[%i] -> (%lld, %lld)\n", i, draws.startIndex[i], draws.vertCount[i]);
+    }
 }
 
 void step() {
@@ -71,7 +75,9 @@ void step() {
         }
     }
 
+    //TODO: Check if we really need start/end frame functions
     Render::StartFrame();
+    Render::RecordDraws(rootSigIndex, PSOIndex, draws.startIndex[0], draws.vertCount[0]);
     UI::drawUI();
     Render::EndFrame();
 

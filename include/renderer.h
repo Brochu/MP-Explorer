@@ -48,7 +48,7 @@ UINT64 CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
 void UploadVertexData(std::span<UploadData> uploadData, Draws &draws);
 
 void UseCamera(Camera &cam);
-void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex);
+void RecordDraws(UINT64 rootSigIndex, UINT64 psoIndex, UINT64 startIndex, UINT64 vertexCount);
 
 
 }
