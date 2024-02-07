@@ -2,6 +2,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <d3d12.h>
 #include <DirectXMath.h>
 
 #include <span>
@@ -39,7 +40,7 @@ namespace Render {
 
 void setup(HWND hwnd, int width, int height);
 void initImGui();
-void StartFrame();
+void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors);
 void EndFrame();
 void teardown();
 

@@ -4,6 +4,7 @@
 
 #include "SDL.h"
 #include "Tracy.hpp"
+#include <d3dx12.h>
 
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
@@ -19,6 +20,9 @@ namespace App {
 bool running = true;
 HWND hwnd;
 SDL_Window *window;
+
+D3D12_VIEWPORT vp[] = { CD3DX12_VIEWPORT(0.f, 0.f, (float)WIDTH, (float)HEIGHT) };
+D3D12_RECT rect[] = { CD3DX12_RECT(0, 0, WIDTH, HEIGHT) };
 
 int rootSigIndex = 0;
 int PSOIndex = 0;
@@ -77,7 +81,7 @@ void step() {
     }
 
     //TODO: Check if we really need start/end frame functions
-    Render::StartFrame();
+    Render::StartFrame(vp, rect);
     Render::RecordDraws(rootSigIndex, PSOIndex, vbufferIndex, draws.startIndex[0], draws.vertCount[0]);
     UI::drawUI();
     Render::EndFrame();

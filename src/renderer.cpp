@@ -1,6 +1,5 @@
 #include "renderer.h"
 
-#include <d3d12.h>
 #include <d3dx12.h>
 #include <dxgi.h>
 #include <dxgi1_6.h>
@@ -19,8 +18,6 @@ namespace Render {
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
-CD3DX12_VIEWPORT viewport;
-CD3DX12_RECT scissor;
 UINT rtvDescSize;
 
 // Dx12 objects
@@ -64,8 +61,6 @@ HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR targ
 void setup(HWND hwnd, int width, int height) {
     printf("[RENDERER] Preparing renderer.\n");
     frameIndex = 0;
-    viewport = CD3DX12_VIEWPORT(0.f, 0.f, (float)width, (float)height);
-    scissor = CD3DX12_RECT(0, 0, width, height);
     rtvDescSize = 0;
 
     for (int i = 0; i < FRAME_COUNT; i++) {
@@ -176,7 +171,7 @@ void initImGui() {
     );
 }
 
-void StartFrame() {
+void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors) {
     ImGui_ImplDX12_NewFrame();
 
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
@@ -184,8 +179,8 @@ void StartFrame() {
     ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), nullptr));
 
     //TODO: Do we have to split this into separate function
-    cmdlist->RSSetViewports(1, &viewport);
-    cmdlist->RSSetScissorRects(1, &scissor);
+    cmdlist->RSSetViewports((UINT)viewports.size(), viewports.data());
+    cmdlist->RSSetScissorRects((UINT)scissors.size(), scissors.data());
 
     D3D12_RESOURCE_BARRIER targetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
         D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET
