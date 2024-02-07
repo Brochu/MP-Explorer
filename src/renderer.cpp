@@ -33,6 +33,8 @@ ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 struct DrawData {
     std::vector<ComPtr<ID3D12Resource>> vertBuffers;
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertBufferViews;
+    std::vector<ComPtr<ID3D12Resource>> idxBuffers;
+    std::vector<D3D12_INDEX_BUFFER_VIEW> idxBufferViews;
 } drawData;
 
 struct Pipelines {
@@ -281,19 +283,27 @@ int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
 int UploadDrawData(std::span<UploadData> uploadData, Draws &draws) {
     draws.vertStart.resize(uploadData.size());
     draws.vertCount.resize(uploadData.size());
+    draws.idxStart.resize(uploadData.size());
+    draws.idxCount.resize(uploadData.size());
 
-    UINT num = 0;
+    UINT vnum = 0;
+    UINT inum = 0;
     Vertex verts[1024]; //TODO: Look into if there's a better default value
+    UINT idx[1024];
     for (int i = 0; i < uploadData.size(); i++) {
-        draws.vertStart[i] = num;
+        draws.vertStart[i] = vnum;
         draws.vertCount[i] = (UINT)uploadData[i].verts.size();
+        draws.idxStart[i] = inum;
+        draws.idxCount[i] = (UINT)uploadData[i].indices.size();
 
-        memcpy(&verts[num], uploadData[i].verts.data(), sizeof(Vertex) * draws.vertCount[i]);
-        num += draws.vertCount[i];
+        memcpy(&verts[vnum], uploadData[i].verts.data(), sizeof(Vertex) * draws.vertCount[i]);
+        memcpy(&idx[inum], uploadData[i].indices.data(), sizeof(UINT) * draws.idxCount[i]);
+        vnum += draws.vertCount[i];
+        inum += draws.idxCount[i];
     }
 
     ComPtr<ID3D12Resource> vertexBuffer;
-    const UINT vertBufferSize = sizeof(Vertex) * (UINT)num;
+    const UINT vertBufferSize = sizeof(Vertex) * (UINT)vnum;
     D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
     D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(vertBufferSize);
     ThrowIfFailed(device->CreateCommittedResource(
