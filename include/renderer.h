@@ -52,7 +52,10 @@ int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
 int UploadDrawData(std::span<UploadData> uploadData, Draws &draws);
 
 void UseCamera(Camera &cam);
-void RecordDraws(int rootSigIndex, int psoIndex, int vbufferIndex, UINT startIndex, UINT vertexCount);
+void RecordDraws(
+    int rootSigIndex, int psoIndex, int vbufferIndex, int ibufferIndex,
+    UINT idxStart, UINT idxCount, INT vertOffset
+);
 
 
 }

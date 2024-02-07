@@ -96,7 +96,10 @@ void step() {
 
     //TODO: Check if we really need start/end frame functions
     Render::StartFrame(vp, rect);
-    Render::RecordDraws(rootSigIndex, PSOIndex, vbufferIndex, draws.vertStart[0], draws.vertCount[0]);
+    Render::RecordDraws(
+        rootSigIndex, PSOIndex, vbufferIndex, vbufferIndex, //THIS IS WRONG, need to review upload process and indices to refer to resources
+        draws.idxStart[0], draws.idxCount[0], draws.vertStart[0]
+    );
     UI::drawUI();
     Render::EndFrame();
 

@@ -362,7 +362,10 @@ void UseCamera(Camera &cam) {
     //P: XMMatrixPerspectiveFovLH(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
 }
 
-void RecordDraws(int rootSigIndex, int psoIndex, int vbufferIndex, UINT startIndex, UINT vertexCount) {
+void RecordDraws(
+    int rootSigIndex, int psoIndex, int vbufferIndex, int ibufferIndex,
+    UINT idxStart, UINT idxCount, INT vertOffset
+) {
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
     cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
@@ -370,7 +373,8 @@ void RecordDraws(int rootSigIndex, int psoIndex, int vbufferIndex, UINT startInd
 
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdlist->IASetVertexBuffers(0, 1, &drawData.vertBufferViews[vbufferIndex]);
-    cmdlist->DrawInstanced(vertexCount, 1, startIndex, 0);
+    cmdlist->IASetIndexBuffer(&drawData.idxBufferViews[ibufferIndex]);
+    cmdlist->DrawIndexedInstanced(idxCount, 1, idxStart, vertOffset, 0);
 }
 
 inline void ThrowIfFailed(HRESULT hr) {
