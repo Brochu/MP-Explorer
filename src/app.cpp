@@ -77,7 +77,8 @@ void setup() {
     vbufferIndex = Render::UploadDrawData(model, draws);
 
     for (int i = 0; i < draws.vertStart.size(); i++) {
-        printf("[APP] draw[%i] -> (%i, %i)\n", i, draws.vertStart[i], draws.vertCount[i]);
+        printf("[APP] draw[%i] verts -> (%i, %i)\n", i, draws.vertStart[i], draws.vertCount[i]);
+        printf("[APP] draw[%i] index -> (%i, %i)\n", i, draws.idxStart[i], draws.idxCount[i]);
     }
 }
 
