@@ -324,10 +324,32 @@ int UploadDrawData(std::span<UploadData> uploadData, Draws &draws) {
     vertexBufferView.SizeInBytes = vertBufferSize;
     vertexBufferView.StrideInBytes = sizeof(Vertex);
 
+    ComPtr<ID3D12Resource> indexBuffer;
+    const UINT idxBufferSize = sizeof(UINT) * (UINT)inum;
+    D3D12_RESOURCE_DESC idxDesc = CD3DX12_RESOURCE_DESC::Buffer(idxBufferSize);
+    ThrowIfFailed(device->CreateCommittedResource(
+        &prop, D3D12_HEAP_FLAG_NONE,
+        &idxDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr, IID_PPV_ARGS(&indexBuffer)
+    ));
+    //TODO: Try to convert committed resources into placed resources for vertex buffers
+
+    UINT8 *pIdxDataBegin;
+    ThrowIfFailed(indexBuffer->Map(0, &readRange, (void**)&pIdxDataBegin));
+    memcpy(pIdxDataBegin, idx, idxBufferSize);
+    indexBuffer->Unmap(0, nullptr);
+
+    D3D12_INDEX_BUFFER_VIEW idxBufferView;
+    idxBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
+    idxBufferView.SizeInBytes = idxBufferSize;
+    idxBufferView.Format = DXGI_FORMAT_R32_UINT;
+
     WaitForGPU();
     int index = (int)drawData.vertBuffers.size();
     drawData.vertBuffers.push_back(vertexBuffer);
     drawData.vertBufferViews.push_back(vertexBufferView);
+    drawData.idxBuffers.push_back(indexBuffer);
+    drawData.idxBufferViews.push_back(idxBufferView);
     return index;
 }
 
