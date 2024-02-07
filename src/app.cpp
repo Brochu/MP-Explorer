@@ -28,10 +28,23 @@ int rootSigIndex = 0;
 int PSOIndex = 0;
 int vbufferIndex = 0;
 
-Vertex tri[] = {
-    { {0.f, 0.25f, 0.f}, {1.f, 0.f} },
-    { {0.25f, -0.25f, 0.f}, {0.f, 1.f} },
-    { {-0.25f, -0.25f, 0.f}, {1.f, 1.f} },
+Vertex cube[] = {
+    { {-0.25f, -0.25f, -0.25f}, {0.f, 0.f} },
+    { { 0.25f, -0.25f, -0.25f}, {1.f, 0.f} },
+    { { 0.25f,  0.25f, -0.25f}, {1.f, 1.f} },
+    { {-0.25f,  0.25f, -0.25f}, {0.f, 1.f} },
+    { {-0.25f, -0.25f,  0.25f}, {0.f, 0.f} },
+    { { 0.25f, -0.25f,  0.25f}, {1.f, 0.f} },
+    { { 0.25f,  0.25f,  0.25f}, {1.f, 1.f} },
+    { {-0.25f,  0.25f,  0.25f}, {0.f, 1.f} },
+};
+UINT idx[] = {
+    0, 1, 3, 3, 1, 2,
+    1, 5, 2, 2, 5, 6,
+    5, 4, 6, 6, 4, 7,
+    4, 0, 7, 7, 0, 3,
+    3, 2, 7, 7, 2, 6,
+    4, 5, 0, 0, 5, 1,
 };
 Draws draws;
 
@@ -60,11 +73,11 @@ void setup() {
 
     rootSigIndex = Render::CreateRootSignature({}, {});
     PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");
-    UploadData verts[1] { {tri} }; //TODO: Is there a better way to handle this? Try with real data?
-    vbufferIndex = Render::UploadVertexData(verts, draws);
+    UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
+    vbufferIndex = Render::UploadDrawData(model, draws);
 
-    for (int i = 0; i < draws.startIndex.size(); i++) {
-        printf("[APP] draw[%i] -> (%i, %i)\n", i, draws.startIndex[i], draws.vertCount[i]);
+    for (int i = 0; i < draws.vertStart.size(); i++) {
+        printf("[APP] draw[%i] -> (%i, %i)\n", i, draws.vertStart[i], draws.vertCount[i]);
     }
 }
 
@@ -82,7 +95,7 @@ void step() {
 
     //TODO: Check if we really need start/end frame functions
     Render::StartFrame(vp, rect);
-    Render::RecordDraws(rootSigIndex, PSOIndex, vbufferIndex, draws.startIndex[0], draws.vertCount[0]);
+    Render::RecordDraws(rootSigIndex, PSOIndex, vbufferIndex, draws.vertStart[0], draws.vertCount[0]);
     UI::drawUI();
     Render::EndFrame();
 

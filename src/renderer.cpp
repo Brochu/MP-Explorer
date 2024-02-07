@@ -278,14 +278,14 @@ int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
     return index;
 }
 
-int UploadVertexData(std::span<UploadData> uploadData, Draws &draws) {
-    draws.startIndex.resize(uploadData.size());
+int UploadDrawData(std::span<UploadData> uploadData, Draws &draws) {
+    draws.vertStart.resize(uploadData.size());
     draws.vertCount.resize(uploadData.size());
 
     UINT num = 0;
     Vertex verts[1024]; //TODO: Look into if there's a better default value
     for (int i = 0; i < uploadData.size(); i++) {
-        draws.startIndex[i] = num;
+        draws.vertStart[i] = num;
         draws.vertCount[i] = (UINT)uploadData[i].verts.size();
 
         memcpy(&verts[num], uploadData[i].verts.data(), sizeof(Vertex) * draws.vertCount[i]);
