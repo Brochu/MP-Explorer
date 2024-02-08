@@ -380,16 +380,22 @@ Camera initCamera(int width, int height) {
 }
 
 void UseCamera(Camera &cam) {
-    //TODO: Prepare and upload camera matrix
-    // Bind camera data to be used for next draws
+    XMMATRIX model = XMMatrixIdentity();
+    XMMATRIX view = XMMatrixLookToLH(cam.pos, cam.forward, cam.up);
+    XMMATRIX persp = XMMatrixPerspectiveFovLH(cam.fov, cam.ratio, cam.nearp, cam.farp);
 
-    //M: Rendered object won't move, so model matrix is XMMatrixIdentity
-    //V: XMMatrixLookToLH(FXMVECTOR EyePosition, FXMVECTOR EyeDirection, FXMVECTOR UpDirection)
-    //P: XMMatrixPerspectiveFovLH(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
+    CamMatrices camData;
+    camData.mvp = model * view * persp;
 
-    //TODO: Replace rtvs with buffered CB with camera matrices
+    ComPtr<ID3D12Resource> buffer = cameraBuffers[frameIndex];
+    CD3DX12_RANGE readRange(0, 0);
+    UINT8* bufferStart = nullptr;
+    ThrowIfFailed(buffer->Map(0, &readRange, (void**)&bufferStart));
+    memcpy(bufferStart, &camData, sizeof(CamMatrices));
+    buffer->Unmap(0, nullptr);
+
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-    cmdlist->SetGraphicsRootConstantBufferView(0, (D3D12_GPU_VIRTUAL_ADDRESS)0);
+    cmdlist->SetGraphicsRootConstantBufferView(0, cameraBuffers[frameIndex]->GetGPUVirtualAddress());
 }
 
 void RecordDraws(int vbufferIndex, int ibufferIndex, UINT idxStart, UINT idxCount, INT vertOffset) {

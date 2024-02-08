@@ -31,9 +31,9 @@ struct Camera {
     float nearp;
     float farp;
 
-    DirectX::XMFLOAT3 pos;
-    DirectX::XMFLOAT3 forward;
-    DirectX::XMFLOAT3 up;
+    DirectX::XMVECTOR pos;
+    DirectX::XMVECTOR forward;
+    DirectX::XMVECTOR up;
 };
 
 struct D3D12_ROOT_PARAMETER;

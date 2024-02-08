@@ -84,11 +84,19 @@ void setup() {
         printf("[APP] draw[%i] index -> (%i, %i)\n", i, draws.idxStart[i], draws.idxCount[i]);
     }
     cam = Render::initCamera(WIDTH, HEIGHT);
+
+    // Debug default camera values
+    DirectX::XMFLOAT3 pos;
+    DirectX::XMStoreFloat3(&pos, cam.pos);
+    DirectX::XMFLOAT3 fwd;
+    DirectX::XMStoreFloat3(&fwd, cam.forward);
+    DirectX::XMFLOAT3 up;
+    DirectX::XMStoreFloat3(&up, cam.up);
     printf("[APP] Camera values :\n");
     printf("    -> %f, %f, %f, %f\n", cam.fov, cam.ratio, cam.nearp, cam.farp);
-    printf("    -> pos (%f, %f, %f)\n", cam.pos.x, cam.pos.y, cam.pos.z);
-    printf("    -> fwd (%f, %f, %f)\n", cam.forward.x, cam.forward.y, cam.forward.z);
-    printf("    -> up (%f, %f, %f)\n", cam.up.x, cam.up.y, cam.up.z);
+    printf("    -> pos (%f, %f, %f)\n", pos.x, pos.y, pos.z);
+    printf("    -> fwd (%f, %f, %f)\n", fwd.x, fwd.y, fwd.z);
+    printf("    -> up (%f, %f, %f)\n", up.x, up.y, up.z);
 }
 
 void step() {
