@@ -83,7 +83,12 @@ void setup() {
         printf("[APP] draw[%i] verts -> (%i, %i)\n", i, draws.vertStart[i], draws.vertCount[i]);
         printf("[APP] draw[%i] index -> (%i, %i)\n", i, draws.idxStart[i], draws.idxCount[i]);
     }
-    cam = Render::initCamera();
+    cam = Render::initCamera(WIDTH, HEIGHT);
+    printf("[APP] Camera values :\n");
+    printf("    -> %f, %f, %f, %f\n", cam.fov, cam.ratio, cam.nearp, cam.farp);
+    printf("    -> pos (%f, %f, %f)\n", cam.pos.x, cam.pos.y, cam.pos.z);
+    printf("    -> fwd (%f, %f, %f)\n", cam.forward.x, cam.forward.y, cam.forward.z);
+    printf("    -> up (%f, %f, %f)\n", cam.up.x, cam.up.y, cam.up.z);
 }
 
 void step() {

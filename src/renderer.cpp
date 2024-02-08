@@ -361,11 +361,22 @@ int UploadDrawData(std::span<UploadData> uploadData, Draws &draws) {
     return index;
 }
 
-Camera initCamera() {
-    //TODO: Create buffered CB for camera matrices
+Camera initCamera(int width, int height) {
+    D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+    D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(CamMatrices));
+
     for (UINT i = 0; i < FRAME_COUNT; i++) {
+        ThrowIfFailed(device->CreateCommittedResource(
+            &prop, D3D12_HEAP_FLAG_NONE ,
+            &desc, D3D12_RESOURCE_STATE_GENERIC_READ, //Needs to stay generic_read because upload heap
+            nullptr, IID_PPV_ARGS(&cameraBuffers[i])
+        ));
     }
-    return {};
+
+    return {
+        45.f, (float)width / height, 0.1f, 100000.f,
+        {-10.f, -10.f, -10.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
+    };
 }
 
 void UseCamera(Camera &cam) {
