@@ -80,6 +80,7 @@ void setup() {
         printf("[APP] draw[%i] verts -> (%i, %i)\n", i, draws.vertStart[i], draws.vertCount[i]);
         printf("[APP] draw[%i] index -> (%i, %i)\n", i, draws.idxStart[i], draws.idxCount[i]);
     }
+    cam = Render::initCamera();
 }
 
 void step() {

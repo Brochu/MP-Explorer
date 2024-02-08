@@ -353,6 +353,11 @@ int UploadDrawData(std::span<UploadData> uploadData, Draws &draws) {
     return index;
 }
 
+Camera initCamera() {
+    //TODO: Create buffered CB for camera matrices
+    return {};
+}
+
 void UseCamera(Camera &cam) {
     //TODO: Prepare and upload camera matrix
     // Bind camera data to be used for next draws
@@ -360,6 +365,10 @@ void UseCamera(Camera &cam) {
     //M: Rendered object won't move, so model matrix is XMMatrixIdentity
     //V: XMMatrixLookToLH(FXMVECTOR EyePosition, FXMVECTOR EyeDirection, FXMVECTOR UpDirection)
     //P: XMMatrixPerspectiveFovLH(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
+
+    //TODO: Replace rtvs with buffered CB with camera matrices
+    ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
+    cmdlist->SetGraphicsRootConstantBufferView(0, rtvs[frameIndex]->GetGPUVirtualAddress());
 }
 
 void RecordDraws(

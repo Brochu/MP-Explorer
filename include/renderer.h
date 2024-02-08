@@ -51,6 +51,7 @@ int CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_
 int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
 int UploadDrawData(std::span<UploadData> uploadData, Draws &draws);
 
+Camera initCamera();
 void UseCamera(Camera &cam);
 void RecordDraws(
     int rootSigIndex, int psoIndex, int vbufferIndex, int ibufferIndex,
