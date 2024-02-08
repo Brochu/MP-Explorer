@@ -18,6 +18,10 @@ namespace Render {
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
+struct CamMatrices {
+    XMMATRIX mvp;
+};
+
 UINT rtvDescSize;
 
 // Dx12 objects
@@ -29,6 +33,7 @@ ComPtr<IDXGISwapChain4> swapchain;
 ComPtr<ID3D12DescriptorHeap> rtvheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
+ComPtr<ID3D12Resource> cameraBuffers[FRAME_COUNT];
 
 struct DrawData {
     std::vector<ComPtr<ID3D12Resource>> vertBuffers;
@@ -173,7 +178,7 @@ void initImGui() {
     );
 }
 
-void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors) {
+void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex) {
     ImGui_ImplDX12_NewFrame();
 
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
@@ -194,6 +199,9 @@ void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> sciss
     cmdlist->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
     const float clear[] { 0.f, 0.2f, 0.4f, 1.f };
     cmdlist->ClearRenderTargetView(rtvHandle, clear, 0, nullptr);
+
+    cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
+    cmdlist->SetPipelineState(pipelines.PSOs[psoIndex].Get());
 }
 
 void EndFrame() {
@@ -355,6 +363,8 @@ int UploadDrawData(std::span<UploadData> uploadData, Draws &draws) {
 
 Camera initCamera() {
     //TODO: Create buffered CB for camera matrices
+    for (UINT i = 0; i < FRAME_COUNT; i++) {
+    }
     return {};
 }
 
@@ -368,17 +378,11 @@ void UseCamera(Camera &cam) {
 
     //TODO: Replace rtvs with buffered CB with camera matrices
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-    cmdlist->SetGraphicsRootConstantBufferView(0, rtvs[frameIndex]->GetGPUVirtualAddress());
+    cmdlist->SetGraphicsRootConstantBufferView(0, (D3D12_GPU_VIRTUAL_ADDRESS)0);
 }
 
-void RecordDraws(
-    int rootSigIndex, int psoIndex, int vbufferIndex, int ibufferIndex,
-    UINT idxStart, UINT idxCount, INT vertOffset
-) {
+void RecordDraws(int vbufferIndex, int ibufferIndex, UINT idxStart, UINT idxCount, INT vertOffset) {
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-
-    cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
-    cmdlist->SetPipelineState(pipelines.PSOs[psoIndex].Get());
 
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdlist->IASetVertexBuffers(0, 1, &drawData.vertBufferViews[vbufferIndex]);

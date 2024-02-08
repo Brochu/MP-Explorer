@@ -43,7 +43,7 @@ namespace Render {
 
 void setup(HWND hwnd, int width, int height);
 void initImGui();
-void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors);
+void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex);
 void EndFrame();
 void teardown();
 
@@ -53,10 +53,6 @@ int UploadDrawData(std::span<UploadData> uploadData, Draws &draws);
 
 Camera initCamera();
 void UseCamera(Camera &cam);
-void RecordDraws(
-    int rootSigIndex, int psoIndex, int vbufferIndex, int ibufferIndex,
-    UINT idxStart, UINT idxCount, INT vertOffset
-);
-
+void RecordDraws(int vbufferIndex, int ibufferIndex, UINT idxStart, UINT idxCount, INT vertOffset);
 
 }

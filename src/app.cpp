@@ -71,8 +71,11 @@ void setup() {
     Render::setup(hwnd, WIDTH, HEIGHT);
     UI::setup(window);
 
-    rootSigIndex = Render::CreateRootSignature({}, {});
+    D3D12_ROOT_PARAMETER camCBV;
+    CD3DX12_ROOT_PARAMETER::InitAsConstantBufferView(camCBV, 0);
+    rootSigIndex = Render::CreateRootSignature({ &camCBV, 1 }, {});
     PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");
+
     UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
     vbufferIndex = Render::UploadDrawData(model, draws);
 
@@ -96,11 +99,9 @@ void step() {
     }
 
     //TODO: Check if we really need start/end frame functions
-    Render::StartFrame(vp, rect);
-    Render::RecordDraws(
-        rootSigIndex, PSOIndex, vbufferIndex, vbufferIndex, //THIS IS WRONG, need to review upload process and indices to refer to resources
-        draws.idxStart[0], draws.idxCount[0], draws.vertStart[0]
-    );
+    Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
+    Render::UseCamera(cam);
+    Render::RecordDraws(vbufferIndex, vbufferIndex, draws.idxStart[0], draws.idxCount[0], draws.vertStart[0]);
     UI::drawUI();
     Render::EndFrame();
 
