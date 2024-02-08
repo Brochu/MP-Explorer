@@ -25,13 +25,14 @@ void update(SDL_Event *event) {
     ImGui_ImplSDL2_ProcessEvent(event);
 }
 
-void drawUI() {
+void drawUI(Camera &cam) {
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
     if (showDemo) {
         ImGui::ShowDemoWindow(&showDemo);
         //TODO: More debug controls here
+        // Camera values
     }
     ImGui::Render();
 }

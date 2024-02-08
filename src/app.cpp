@@ -115,7 +115,7 @@ void step() {
     Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
     Render::UseCamera(cam);
     Render::RecordDraws(vbufferIndex, vbufferIndex, draws.idxStart[0], draws.idxCount[0], draws.vertStart[0]);
-    UI::drawUI();
+    UI::drawUI(cam);
     Render::EndFrame();
 
     FrameMark;
