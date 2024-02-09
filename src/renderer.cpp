@@ -20,6 +20,7 @@ using namespace DirectX;
 
 struct CamMatrices {
     XMMATRIX mvp;
+    XMVECTOR color;
 };
 
 UINT rtvDescSize;
@@ -33,8 +34,9 @@ ComPtr<IDXGISwapChain4> swapchain;
 ComPtr<ID3D12DescriptorHeap> rtvheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
-ComPtr<ID3D12Resource> cameraBuffers[FRAME_COUNT];
+ComPtr<ID3D12Resource> cameraBuffers[FRAME_COUNT]; //TODO: Do we need to handle more than once camera
 
+//TODO: Need to review this struct
 struct DrawData {
     std::vector<ComPtr<ID3D12Resource>> vertBuffers;
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertBufferViews;
@@ -386,6 +388,7 @@ void UseCamera(Camera &cam) {
 
     CamMatrices camData;
     camData.mvp = model * view * persp;
+    camData.color = { 1.f, 0.f, 1.f, 1.f };
 
     ComPtr<ID3D12Resource> buffer = cameraBuffers[frameIndex];
     CD3DX12_RANGE readRange(0, 0);
