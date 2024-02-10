@@ -1,4 +1,6 @@
 #include "renderer.h"
+#include "debugui.h"
+#include "TracyD3D12.hpp"
 
 #include <d3dx12.h>
 #include <dxgi.h>
@@ -8,9 +10,6 @@
 
 #include <cassert>
 #include <wrl.h>
-
-#include "imgui_impl_dx12.h"
-#include "TracyD3D12.hpp"
 
 #define FRAME_COUNT 2
 
@@ -166,19 +165,10 @@ void setup(HWND hwnd, int width, int height) {
         ThrowIfFailed(utils->CreateDefaultIncludeHandler(&inclHandler));
     }
     ctx = TracyD3D12Context(device.Get(), queue.Get());
-}
-
-void initImGui() {
-    ImGui_ImplDX12_Init(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM,
-        imguiheap.Get(),
-        imguiheap->GetCPUDescriptorHandleForHeapStart(),
-        imguiheap->GetGPUDescriptorHandleForHeapStart()
-    );
+    UI::initRender(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM, imguiheap.Get());
 }
 
 void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex) {
-    ImGui_ImplDX12_NewFrame();
-
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
     ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), pipelines.PSOs[psoIndex].Get()));
@@ -205,7 +195,7 @@ void EndFrame() {
     //TODO: Is this logic at the right spot?
     ID3D12DescriptorHeap *heaps { imguiheap.Get() };
     cmdLists[frameIndex]->SetDescriptorHeaps(1, &heaps);
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdLists[frameIndex].Get());
+    UI::endFrame(cmdLists[frameIndex].Get());
 
     D3D12_RESOURCE_BARRIER presentBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT
@@ -225,7 +215,6 @@ void teardown() {
     WaitForGPU();
 
     TracyD3D12Destroy(ctx);
-    ImGui_ImplDX12_Shutdown();
     CloseHandle(fenceEvent);
 }
 

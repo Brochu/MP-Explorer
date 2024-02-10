@@ -73,8 +73,8 @@ void setup() {
     running = true;
 
     hwnd = GetActiveWindow();
+    UI::initApp(window);
     Render::setup(hwnd, WIDTH, HEIGHT);
-    UI::setup(window);
 
     D3D12_ROOT_PARAMETER camCBV;
     CD3DX12_ROOT_PARAMETER::InitAsConstantBufferView(camCBV, 0);
@@ -101,6 +101,7 @@ void step() {
 
 void teardown() {
     Render::teardown();
+    UI::teardown();
 
     printf("[APP] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);

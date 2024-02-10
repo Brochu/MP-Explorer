@@ -3,6 +3,7 @@
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
+#include "imgui_impl_dx12.h"
 
 namespace UI {
 using namespace DirectX;
@@ -10,7 +11,7 @@ using namespace DirectX;
 bool showDemo = true;
 bool showDebug = true;
 
-void setup(SDL_Window *window) {
+void initApp(SDL_Window *window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO(); (void)io;
@@ -20,7 +21,14 @@ void setup(SDL_Window *window) {
     ImGui::StyleColorsDark();
 
     ImGui_ImplSDL2_InitForD3D(window);
-    Render::initImGui();
+}
+
+void initRender(ID3D12Device *device, int frameCount, DXGI_FORMAT format, ID3D12DescriptorHeap *heap) {
+    ImGui_ImplDX12_Init(device, frameCount, format,
+        heap,
+        heap->GetCPUDescriptorHandleForHeapStart(),
+        heap->GetGPUDescriptorHandleForHeapStart()
+    );
 }
 
 void update(SDL_Event *event) {
@@ -29,6 +37,7 @@ void update(SDL_Event *event) {
 
 void drawUI(Camera &cam) {
     ImGui_ImplSDL2_NewFrame();
+    ImGui_ImplDX12_NewFrame();
     ImGui::NewFrame();
 
     if (showDemo) {
@@ -58,8 +67,13 @@ void drawUI(Camera &cam) {
     ImGui::Render();
 }
 
+void endFrame(ID3D12GraphicsCommandList *cmdlist) {
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdlist);
+}
+
 void teardown() {
     ImGui_ImplSDL2_Shutdown();
+    ImGui_ImplDX12_Shutdown();
     ImGui::DestroyContext();
 }
 

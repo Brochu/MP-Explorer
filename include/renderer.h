@@ -41,7 +41,6 @@ struct D3D12_STATIC_SAMPLER_DESC;
 namespace Render {
 
 void setup(HWND hwnd, int width, int height);
-void initImGui();
 void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex);
 void EndFrame();
 void teardown();
