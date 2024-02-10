@@ -33,6 +33,9 @@ struct Camera {
     DirectX::XMVECTOR pos;
     DirectX::XMVECTOR forward;
     DirectX::XMVECTOR up;
+
+    constexpr static float min_fov = 5.f;
+    constexpr static float max_fov = 125.f;
 };
 
 struct D3D12_ROOT_PARAMETER;
