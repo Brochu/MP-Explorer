@@ -5,6 +5,7 @@
 #include "SDL.h"
 #include "Tracy.hpp"
 
+#include <DirectXMath.h>
 #include <d3dx12.h>
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
@@ -12,6 +13,8 @@
 #include <filesystem>
 
 namespace App {
+using namespace DirectX;
+
 #define WIDTH 1024
 #define HEIGHT 768
 #define TITLE "[pre-alpha] MP-Explorer"
@@ -48,10 +51,15 @@ UINT idx[] = {
     4, 5, 0, 0, 5, 1,
 };
 Draws draws;
+
 Camera cam;
+struct CamInputs {
+    int fwd = 0;
+    int left = 0;
+} camInputs;
 
 void Update(float delta, float elapsed);
-void CameraInputs(SDL_Event *e);
+void UpdateCamera(float delta, float elapsed);
 void Render();
 
 void Setup() {
@@ -113,23 +121,41 @@ void Update(float delta, float elapsed) {
 
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
-        CameraInputs(&e);
         UI::Update(&e);
 
         if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
             running = false;
         }
+
+        if (e.type == SDL_KEYDOWN) {
+            if (e.key.keysym.sym == SDLK_w) camInputs.fwd =  1;
+            if (e.key.keysym.sym == SDLK_s) camInputs.fwd = -1;
+            if (e.key.keysym.sym == SDLK_a) camInputs.left =  1;
+            if (e.key.keysym.sym == SDLK_d) camInputs.left = -1;
+        }
+        else if (e.type == SDL_KEYUP) {
+            camInputs.fwd = camInputs.left = 0;
+        }
+
+        if (e.type == SDL_MOUSEWHEEL) {
+            if (e.wheel.y > 0) {
+                cam.fov = max(Camera::min_fov, cam.fov - Camera::fov_speed);
+            }
+            else if (e.wheel.y < 0) {
+                cam.fov = min(Camera::max_fov, cam.fov + Camera::fov_speed);
+            }
+        }
     }
+
+    UpdateCamera(delta, elapsed);
 }
 
-void CameraInputs(SDL_Event *e) {
-    if (e->type == SDL_MOUSEWHEEL) {
-        if (e->wheel.y < 0) {
-            cam.fov = min(Camera::max_fov, cam.fov+2);
-        }
-        else if (e->wheel.y > 0) {
-            cam.fov = max(Camera::min_fov, cam.fov-2);
-        }
+void UpdateCamera(float delta, float elapsed) {
+    if (camInputs.fwd > 0) {
+        cam.pos += XMVector3Normalize(cam.forward) * delta * Camera::speed;
+    }
+    else if (camInputs.fwd < 0) {
+        cam.pos -= XMVector3Normalize(cam.forward) * delta * Camera::speed;
     }
 }
 
