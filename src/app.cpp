@@ -51,8 +51,8 @@ Draws draws;
 Camera cam;
 
 void Update(float delta, float elapsed);
-void Render();
 void cameraInputs(SDL_Event *e);
+void Render();
 
 void setup() {
     printf("[APP] Data path is setup %s\n", PATH);
@@ -101,7 +101,6 @@ void step() {
 
 void teardown() {
     Render::teardown();
-    UI::teardown();
 
     printf("[APP] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);
@@ -122,17 +121,6 @@ void Update(float delta, float elapsed) {
     }
 }
 
-void Render() {
-    ZoneScoped;
-
-    //TODO: I have to review this process, interface is bad
-    Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
-    Render::UseCamera(cam);
-    Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
-    UI::drawUI(cam); //TODO: Find better way to keep all ImGui logic at the same spot
-    Render::EndFrame();
-}
-
 void cameraInputs(SDL_Event *e) {
     if (e->type == SDL_MOUSEWHEEL) {
         if (e->wheel.y < 0) {
@@ -142,6 +130,17 @@ void cameraInputs(SDL_Event *e) {
             cam.fov -= 2;
         }
     }
+}
+
+void Render() {
+    ZoneScoped;
+
+    //TODO: I have to review this process, interface is bad
+    Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
+    Render::UseCamera(cam);
+    Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
+    UI::drawUI(cam);
+    Render::EndFrame();
 }
 
 }
