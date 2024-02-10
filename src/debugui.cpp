@@ -64,10 +64,10 @@ void drawUI(Camera &cam) {
 
         ImGui::End();
     }
-    ImGui::Render();
 }
 
 void endFrame(ID3D12GraphicsCommandList *cmdlist) {
+    ImGui::Render();
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdlist);
 }
 

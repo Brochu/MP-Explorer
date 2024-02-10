@@ -124,10 +124,10 @@ void Update(float delta, float elapsed) {
 void cameraInputs(SDL_Event *e) {
     if (e->type == SDL_MOUSEWHEEL) {
         if (e->wheel.y < 0) {
-            cam.fov += 2;
+            cam.fov = min(125.f, cam.fov+2);
         }
         else if (e->wheel.y > 0) {
-            cam.fov -= 2;
+            cam.fov = max(5.f, cam.fov-2);
         }
     }
 }
