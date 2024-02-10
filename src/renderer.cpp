@@ -377,14 +377,14 @@ Camera initCamera(int width, int height) {
 
     return {
         45.f, (float)width / height, 0.1f, 100000.f,
-        {-10.f, -10.f, -10.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
+        {-5.f, -5.f, -5.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
     };
 }
 
 void UseCamera(Camera &cam) {
     XMMATRIX model = XMMatrixIdentity();
     XMMATRIX view = XMMatrixLookToLH(cam.pos, cam.forward, cam.up);
-    XMMATRIX persp = XMMatrixPerspectiveFovLH(cam.fov, cam.ratio, cam.nearp, cam.farp);
+    XMMATRIX persp = XMMatrixPerspectiveFovLH(XMConvertToRadians(cam.fov), cam.ratio, cam.nearp, cam.farp);
 
     CamMatrices camData;
     camData.mvp = model * view * persp;

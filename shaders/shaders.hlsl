@@ -10,8 +10,8 @@ struct PSInput {
 
 PSInput VSMain(float3 pos : POSITION, float2 tex : TEXCOORD0) {
     PSInput o;
-    o.pos = float4(pos, 1.0);
-    o.color = color;
+    o.pos = mul(float4(pos, 1.0), mvp);
+    o.color = float4(tex.x, tex.y, 0.0, 1.0);
     return o;
 }
 

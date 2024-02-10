@@ -50,6 +50,8 @@ Draws draws;
 
 Camera cam;
 
+void cameraInputs(SDL_Event *e);
+
 void setup() {
     printf("[APP] Data path is setup %s\n", PATH);
     for (const auto &entry : std::filesystem::directory_iterator(PATH)) {
@@ -104,9 +106,10 @@ void step() {
 
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
+        cameraInputs(&e);
         UI::update(&e);
 
-        if(e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
+        if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
             running = false;
         }
     }
@@ -127,6 +130,17 @@ void teardown() {
     printf("[APP] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void cameraInputs(SDL_Event *e) {
+    if (e->type == SDL_MOUSEWHEEL) {
+        if (e->wheel.y < 0) {
+            cam.fov += 2;
+        }
+        else if (e->wheel.y > 0) {
+            cam.fov -= 2;
+        }
+    }
 }
 
 }
