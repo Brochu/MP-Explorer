@@ -20,7 +20,6 @@ using namespace DirectX;
 
 struct CamMatrices {
     XMMATRIX mvp;
-    XMVECTOR color;
 };
 
 UINT rtvDescSize;
@@ -388,7 +387,6 @@ void UseCamera(Camera &cam) {
 
     CamMatrices camData;
     camData.mvp = model * view * persp;
-    camData.color = { 1.f, 0.f, 1.f, 1.f };
 
     ComPtr<ID3D12Resource> buffer = cameraBuffers[frameIndex];
     CD3DX12_RANGE readRange(0, 0);

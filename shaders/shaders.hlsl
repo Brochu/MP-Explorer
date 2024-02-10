@@ -1,6 +1,5 @@
 cbuffer PerFrame : register(b0) {
     float4x4 mvp;
-    float4 color;
 };
 
 struct PSInput {
