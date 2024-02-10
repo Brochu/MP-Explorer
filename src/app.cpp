@@ -97,7 +97,7 @@ void step() {
     //TODO: Check if we really need start/end frame functions
     Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
     Render::UseCamera(cam);
-    Render::RecordDraws(0, 0, draws.idxStart[0], draws.idxCount[0], draws.vertStart[0]);
+    Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
     UI::drawUI(cam);
     Render::EndFrame();
 

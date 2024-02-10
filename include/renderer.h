@@ -52,6 +52,6 @@ Draws UploadDrawData(std::span<UploadData> uploadData);
 
 Camera initCamera(int width, int height);
 void UseCamera(Camera &cam);
-void RecordDraws(int vbufferIndex, int ibufferIndex, UINT idxStart, UINT idxCount, INT vertOffset);
+void RecordDraws(UINT idxCount, UINT idxStart, INT vertOffset);
 
 }

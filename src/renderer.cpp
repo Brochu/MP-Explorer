@@ -386,7 +386,7 @@ void UseCamera(Camera &cam) {
     cmdlist->SetGraphicsRootConstantBufferView(0, cameraBuffers[frameIndex]->GetGPUVirtualAddress());
 }
 
-void RecordDraws(int vbufferIndex, int ibufferIndex, UINT idxStart, UINT idxCount, INT vertOffset) {
+void RecordDraws(UINT idxCount, UINT idxStart, INT vertOffset) {
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
