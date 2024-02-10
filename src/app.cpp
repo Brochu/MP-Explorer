@@ -51,10 +51,10 @@ Draws draws;
 Camera cam;
 
 void Update(float delta, float elapsed);
-void cameraInputs(SDL_Event *e);
+void CameraInputs(SDL_Event *e);
 void Render();
 
-void setup() {
+void Setup() {
     printf("[APP] Data path is setup %s\n", PATH);
     for (const auto &entry : std::filesystem::directory_iterator(PATH)) {
         printf(" - '%ls'\n", entry.path().c_str());
@@ -73,8 +73,8 @@ void setup() {
     running = true;
 
     hwnd = GetActiveWindow();
-    UI::initApp(window);
-    Render::setup(hwnd, WIDTH, HEIGHT);
+    UI::InitApp(window);
+    Render::Setup(hwnd, WIDTH, HEIGHT);
 
     D3D12_ROOT_PARAMETER camCBV;
     CD3DX12_ROOT_PARAMETER::InitAsConstantBufferView(camCBV, 0);
@@ -83,10 +83,10 @@ void setup() {
 
     UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
     draws = Render::UploadDrawData(model);
-    cam = Render::initCamera(WIDTH, HEIGHT);
+    cam = Render::InitCamera(WIDTH, HEIGHT);
 }
 
-void step() {
+void Step() {
     ZoneScoped;
     UINT64 current = SDL_GetTicks64();
     float delta = (current - lastStamp) / 1000.f;
@@ -99,9 +99,9 @@ void step() {
     FrameMark;
 }
 
-void teardown() {
-    Render::teardown();
-    UI::teardown();
+void Teardown() {
+    Render::Teardown();
+    UI::Teardown();
 
     printf("[APP] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);
@@ -113,8 +113,8 @@ void Update(float delta, float elapsed) {
 
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
-        cameraInputs(&e);
-        UI::update(&e);
+        CameraInputs(&e);
+        UI::Update(&e);
 
         if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
             running = false;
@@ -122,7 +122,7 @@ void Update(float delta, float elapsed) {
     }
 }
 
-void cameraInputs(SDL_Event *e) {
+void CameraInputs(SDL_Event *e) {
     if (e->type == SDL_MOUSEWHEEL) {
         if (e->wheel.y < 0) {
             cam.fov = min(Camera::max_fov, cam.fov+2);
@@ -140,7 +140,7 @@ void Render() {
     Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
     Render::UseCamera(cam);
     Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
-    UI::drawUI(cam);
+    UI::DrawUI(cam);
     Render::EndFrame();
 }
 

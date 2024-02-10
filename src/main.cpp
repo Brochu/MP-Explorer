@@ -1,12 +1,12 @@
 #include "app.h"
 
 int main(int argc, char **argv) {
-    App::setup();
+    App::Setup();
 
     while(App::running) {
-        App::step();
+        App::Step();
     }
 
-    App::teardown();
+    App::Teardown();
     return 0;
 }

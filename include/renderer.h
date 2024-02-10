@@ -43,16 +43,16 @@ struct D3D12_STATIC_SAMPLER_DESC;
 
 namespace Render {
 
-void setup(HWND hwnd, int width, int height);
+void Setup(HWND hwnd, int width, int height);
 void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex);
 void EndFrame();
-void teardown();
+void Teardown();
 
 int CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers);
 int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
 Draws UploadDrawData(std::span<UploadData> uploadData);
 
-Camera initCamera(int width, int height);
+Camera InitCamera(int width, int height);
 void UseCamera(Camera &cam);
 void RecordDraws(UINT idxCount, UINT idxStart, INT vertOffset);
 

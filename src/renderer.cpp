@@ -62,7 +62,7 @@ void WaitForGPU();
 void MoveToNextFrame();
 HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR target, ComPtr<IDxcBlob> &shader);
 
-void setup(HWND hwnd, int width, int height) {
+void Setup(HWND hwnd, int width, int height) {
     printf("[RENDERER] Preparing renderer.\n");
     frameIndex = 0;
     rtvDescSize = 0;
@@ -165,7 +165,7 @@ void setup(HWND hwnd, int width, int height) {
         ThrowIfFailed(utils->CreateDefaultIncludeHandler(&inclHandler));
     }
     ctx = TracyD3D12Context(device.Get(), queue.Get());
-    UI::initRender(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM, imguiheap.Get());
+    UI::InitRender(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM, imguiheap.Get());
 }
 
 void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex) {
@@ -195,7 +195,7 @@ void EndFrame() {
     //TODO: Is this logic at the right spot?
     ID3D12DescriptorHeap *heaps { imguiheap.Get() };
     cmdLists[frameIndex]->SetDescriptorHeaps(1, &heaps);
-    UI::endFrame(cmdLists[frameIndex].Get());
+    UI::EndFrame(cmdLists[frameIndex].Get());
 
     D3D12_RESOURCE_BARRIER presentBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT
@@ -210,7 +210,7 @@ void EndFrame() {
     MoveToNextFrame();
 }
 
-void teardown() {
+void Teardown() {
     printf("[RENDERER] Teardown renderer.\n");
     WaitForGPU();
 
@@ -337,7 +337,7 @@ Draws UploadDrawData(std::span<UploadData> uploadData) {
     return draws;
 }
 
-Camera initCamera(int width, int height) {
+Camera InitCamera(int width, int height) {
     D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
     D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(CamMatrices));
 

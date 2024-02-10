@@ -11,7 +11,7 @@ using namespace DirectX;
 bool showDemo = true;
 bool showDebug = true;
 
-void initApp(SDL_Window *window) {
+void InitApp(SDL_Window *window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO(); (void)io;
@@ -23,7 +23,7 @@ void initApp(SDL_Window *window) {
     ImGui_ImplSDL2_InitForD3D(window);
 }
 
-void initRender(ID3D12Device *device, int frameCount, DXGI_FORMAT format, ID3D12DescriptorHeap *heap) {
+void InitRender(ID3D12Device *device, int frameCount, DXGI_FORMAT format, ID3D12DescriptorHeap *heap) {
     ImGui_ImplDX12_Init(device, frameCount, format,
         heap,
         heap->GetCPUDescriptorHandleForHeapStart(),
@@ -31,11 +31,11 @@ void initRender(ID3D12Device *device, int frameCount, DXGI_FORMAT format, ID3D12
     );
 }
 
-void update(SDL_Event *event) {
+void Update(SDL_Event *event) {
     ImGui_ImplSDL2_ProcessEvent(event);
 }
 
-void drawUI(Camera &cam) {
+void DrawUI(Camera &cam) {
     ImGui_ImplSDL2_NewFrame();
     ImGui_ImplDX12_NewFrame();
     ImGui::NewFrame();
@@ -66,12 +66,12 @@ void drawUI(Camera &cam) {
     }
 }
 
-void endFrame(ID3D12GraphicsCommandList *cmdlist) {
+void EndFrame(ID3D12GraphicsCommandList *cmdlist) {
     ImGui::Render();
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdlist);
 }
 
-void teardown() {
+void Teardown() {
     ImGui_ImplSDL2_Shutdown();
     ImGui_ImplDX12_Shutdown();
     ImGui::DestroyContext();
