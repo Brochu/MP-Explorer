@@ -5,8 +5,10 @@
 #include "imgui_impl_sdl.h"
 
 namespace UI {
+using namespace DirectX;
 
 bool showDemo = true;
+bool showDebug = true;
 
 void setup(SDL_Window *window) {
     IMGUI_CHECKVERSION();
@@ -31,8 +33,27 @@ void drawUI(Camera &cam) {
 
     if (showDemo) {
         ImGui::ShowDemoWindow(&showDemo);
-        //TODO: More debug controls here
-        // Camera values
+    }
+    if (showDebug) {
+        ImGui::Begin("Debug", &showDebug);
+
+        ImGui::BeginGroup();
+        ImGui::Text("Camera values:");
+        ImGui::Text("FoV: %f", cam.fov);
+        ImGui::Text("Aspect Ratio: %f", cam.ratio);
+        ImGui::Text("Near Plane: %f", cam.nearp);
+        ImGui::Text("Far Plane: %f", cam.farp);
+
+        XMFLOAT3 vec;
+        XMStoreFloat3(&vec, cam.pos);
+        ImGui::Text("Position: (%f, %f, %f)", vec.x, vec.y, vec.z);
+        XMStoreFloat3(&vec, cam.forward);
+        ImGui::Text("Forward: (%f, %f, %f)", vec.x, vec.y, vec.z);
+        XMStoreFloat3(&vec, cam.up);
+        ImGui::Text("Up: (%f, %f, %f)", vec.x, vec.y, vec.z);
+        ImGui::EndGroup();
+
+        ImGui::End();
     }
     ImGui::Render();
 }
