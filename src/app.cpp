@@ -96,26 +96,6 @@ void step() {
     Update(delta, elapsed);
     Render();
 
-    //TODO: Move this logic to update func call
-    SDL_Event e;
-    while(SDL_PollEvent(&e)) {
-        cameraInputs(&e);
-        UI::update(&e);
-
-        if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
-            running = false;
-        }
-    }
-
-    //TODO: I have to review this process, interface is bad
-    // Need to have better split between Update logic and Render logic
-    // This part should go in Render logic
-    Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
-    Render::UseCamera(cam);
-    Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
-    UI::drawUI(cam); //TODO: Find better way to keep all ImGui logic at the same spot
-    Render::EndFrame();
-
     FrameMark;
 }
 
@@ -129,10 +109,27 @@ void teardown() {
 
 void Update(float delta, float elapsed) {
     ZoneScoped;
+
+    SDL_Event e;
+    while(SDL_PollEvent(&e)) {
+        cameraInputs(&e);
+        UI::update(&e);
+
+        if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
+            running = false;
+        }
+    }
 }
 
 void Render() {
     ZoneScoped;
+
+    //TODO: I have to review this process, interface is bad
+    Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
+    Render::UseCamera(cam);
+    Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
+    UI::drawUI(cam); //TODO: Find better way to keep all ImGui logic at the same spot
+    Render::EndFrame();
 }
 
 void cameraInputs(SDL_Event *e) {
