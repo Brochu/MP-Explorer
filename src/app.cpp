@@ -134,7 +134,8 @@ void Update(float delta, float elapsed) {
             if (e.key.keysym.sym == SDLK_d) camInputs.left = -1;
         }
         else if (e.type == SDL_KEYUP) {
-            camInputs.fwd = camInputs.left = 0;
+            if (e.key.keysym.sym == SDLK_w || e.key.keysym.sym == SDLK_s) camInputs.fwd =  0;
+            if (e.key.keysym.sym == SDLK_a || e.key.keysym.sym == SDLK_d) camInputs.left =  0;
         }
 
         if (e.type == SDL_MOUSEWHEEL) {
@@ -156,6 +157,15 @@ void UpdateCamera(float delta, float elapsed) {
     }
     else if (camInputs.fwd < 0) {
         cam.pos -= XMVector3Normalize(cam.forward) * delta * Camera::speed;
+    }
+
+    if (camInputs.left > 0) {
+        XMVECTOR left = XMVector3Normalize(XMVector3Cross(cam.forward, cam.up));
+        cam.pos += left * delta * Camera::speed;
+    }
+    else if (camInputs.left < 0) {
+        XMVECTOR left = XMVector3Normalize(XMVector3Cross(cam.forward, cam.up));
+        cam.pos -= left * delta * Camera::speed;
     }
 }
 
