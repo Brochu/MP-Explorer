@@ -4,8 +4,8 @@
 
 #include "SDL.h"
 #include "Tracy.hpp"
-#include <d3dx12.h>
 
+#include <d3dx12.h>
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -96,6 +96,7 @@ void step() {
     Update(delta, elapsed);
     Render();
 
+    //TODO: Move this logic to update func call
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
         cameraInputs(&e);
@@ -108,10 +109,11 @@ void step() {
 
     //TODO: I have to review this process, interface is bad
     // Need to have better split between Update logic and Render logic
+    // This part should go in Render logic
     Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
     Render::UseCamera(cam);
     Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
-    UI::drawUI(cam);
+    UI::drawUI(cam); //TODO: Find better way to keep all ImGui logic at the same spot
     Render::EndFrame();
 
     FrameMark;
