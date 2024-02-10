@@ -101,6 +101,7 @@ void step() {
 
 void teardown() {
     Render::teardown();
+    UI::teardown();
 
     printf("[APP] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);
