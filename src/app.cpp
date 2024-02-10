@@ -20,6 +20,8 @@ namespace App {
 bool running = true;
 HWND hwnd;
 SDL_Window *window;
+UINT64 startStamp;
+UINT64 lastStamp;
 
 D3D12_VIEWPORT vp[] = { CD3DX12_VIEWPORT(0.f, 0.f, (float)WIDTH, (float)HEIGHT) };
 D3D12_RECT rect[] = { CD3DX12_RECT(0, 0, WIDTH, HEIGHT) };
@@ -48,6 +50,8 @@ UINT idx[] = {
 Draws draws;
 Camera cam;
 
+void Update(float delta, float elapsed);
+void Render();
 void cameraInputs(SDL_Event *e);
 
 void setup() {
@@ -61,6 +65,7 @@ void setup() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("[ERR] Failed to init SDL2 : %s\n", SDL_GetError());
     }
+    startStamp = lastStamp = SDL_GetTicks64();
     window = SDL_CreateWindow(TITLE, WINDOW_POS, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
         printf("[ERR] Failed to create SDL2 window %s\n", SDL_GetError());
@@ -83,6 +88,13 @@ void setup() {
 
 void step() {
     ZoneScoped;
+    UINT64 current = SDL_GetTicks64();
+    float delta = (current - lastStamp) / 1000.f;
+    float elapsed = (current - startStamp) / 1000.f;
+    lastStamp = current;
+
+    Update(delta, elapsed);
+    Render();
 
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
@@ -94,7 +106,8 @@ void step() {
         }
     }
 
-    //TODO: Check if we really need start/end frame functions
+    //TODO: I have to review this process, interface is bad
+    // Need to have better split between Update logic and Render logic
     Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
     Render::UseCamera(cam);
     Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
@@ -110,6 +123,14 @@ void teardown() {
     printf("[APP] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void Update(float delta, float elapsed) {
+    ZoneScoped;
+}
+
+void Render() {
+    ZoneScoped;
 }
 
 void cameraInputs(SDL_Event *e) {

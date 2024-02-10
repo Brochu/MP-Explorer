@@ -181,16 +181,16 @@ void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> sciss
 
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-    ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), nullptr));
-
-    //TODO: Do we have to split this into separate function
-    cmdlist->RSSetViewports((UINT)viewports.size(), viewports.data());
-    cmdlist->RSSetScissorRects((UINT)scissors.size(), scissors.data());
+    ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), pipelines.PSOs[psoIndex].Get()));
 
     D3D12_RESOURCE_BARRIER targetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
         D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET
     );
     cmdlist->ResourceBarrier(1, &targetBarrier);
+
+    //TODO: Do we have to split this into separate function
+    cmdlist->RSSetViewports((UINT)viewports.size(), viewports.data());
+    cmdlist->RSSetScissorRects((UINT)scissors.size(), scissors.data());
 
     //TODO: Handle giving a custom render target? Or split into function
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
@@ -199,7 +199,6 @@ void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> sciss
     cmdlist->ClearRenderTargetView(rtvHandle, clear, 0, nullptr);
 
     cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
-    cmdlist->SetPipelineState(pipelines.PSOs[psoIndex].Get());
 }
 
 void EndFrame() {
