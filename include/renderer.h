@@ -24,6 +24,11 @@ struct Draws {
     std::vector<UINT> vertStart;
 };
 
+//TODO: Might need to rework the camera
+// Keep most of the camera definition on at app side
+// Render only needs a MVP matrix
+// Calculate everything on app side, provide root sig parameter to renderer
+// Less abstraction for renderer
 struct Camera {
     float fov;
     float ratio;
