@@ -35,13 +35,10 @@ ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 ComPtr<ID3D12Resource> cameraBuffers[FRAME_COUNT]; //TODO: Do we need to handle more than once camera
 
-//TODO: Need to review this struct
-struct DrawData {
-    std::vector<ComPtr<ID3D12Resource>> vertBuffers;
-    std::vector<D3D12_VERTEX_BUFFER_VIEW> vertBufferViews;
-    std::vector<ComPtr<ID3D12Resource>> idxBuffers;
-    std::vector<D3D12_INDEX_BUFFER_VIEW> idxBufferViews;
-} drawData;
+ComPtr<ID3D12Resource> vBuffer;
+D3D12_VERTEX_BUFFER_VIEW vBufferView;
+ComPtr<ID3D12Resource> iBuffer;
+D3D12_INDEX_BUFFER_VIEW iBufferView;
 
 struct Pipelines {
     std::vector<ComPtr<ID3D12RootSignature>> rootSigs;
@@ -289,77 +286,67 @@ int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
     return index;
 }
 
-int UploadDrawData(std::span<UploadData> uploadData, Draws &draws) {
-    draws.vertStart.resize(uploadData.size());
-    draws.vertCount.resize(uploadData.size());
-    draws.idxStart.resize(uploadData.size());
+Draws UploadDrawData(std::span<UploadData> uploadData) {
+    Draws draws;
     draws.idxCount.resize(uploadData.size());
+    draws.idxStart.resize(uploadData.size());
+    draws.vertStart.resize(uploadData.size());
 
-    UINT vnum = 0;
     UINT inum = 0;
-    Vertex verts[1024]; //TODO: Look into if there's a better default value
-    UINT idx[1024];
+    UINT vnum = 0;
+    UINT idx[8096];
+    Vertex verts[8096];
     for (int i = 0; i < uploadData.size(); i++) {
-        draws.vertStart[i] = vnum;
-        draws.vertCount[i] = (UINT)uploadData[i].verts.size();
-        draws.idxStart[i] = inum;
         draws.idxCount[i] = (UINT)uploadData[i].indices.size();
+        draws.idxStart[i] = inum;
+        draws.vertStart[i] = vnum;
 
-        memcpy(&verts[vnum], uploadData[i].verts.data(), sizeof(Vertex) * draws.vertCount[i]);
         memcpy(&idx[inum], uploadData[i].indices.data(), sizeof(UINT) * draws.idxCount[i]);
-        vnum += draws.vertCount[i];
+        memcpy(&verts[vnum], uploadData[i].verts.data(), sizeof(Vertex) * uploadData[i].verts.size());
         inum += draws.idxCount[i];
+        vnum += (UINT)uploadData[i].verts.size();
     }
 
-    ComPtr<ID3D12Resource> vertexBuffer;
-    const UINT vertBufferSize = sizeof(Vertex) * (UINT)vnum;
+    const UINT vBufferSize = sizeof(Vertex) * (UINT)vnum;
     D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-    D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(vertBufferSize);
+    D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(vBufferSize);
     ThrowIfFailed(device->CreateCommittedResource(
         &prop, D3D12_HEAP_FLAG_NONE,
         &desc, D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr, IID_PPV_ARGS(&vertexBuffer)
+        nullptr, IID_PPV_ARGS(&vBuffer)
     ));
     //TODO: Try to convert committed resources into placed resources for vertex buffers
 
-    UINT8 *pVertDataBegin;
+    UINT8 *pvBuffer;
     CD3DX12_RANGE readRange(0, 0);
-    ThrowIfFailed(vertexBuffer->Map(0, &readRange, (void**)&pVertDataBegin));
-    memcpy(pVertDataBegin, verts, vertBufferSize);
-    vertexBuffer->Unmap(0, nullptr);
+    ThrowIfFailed(vBuffer->Map(0, &readRange, (void**)&pvBuffer));
+    memcpy(pvBuffer, verts, vBufferSize);
+    vBuffer->Unmap(0, nullptr);
 
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-    vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
-    vertexBufferView.SizeInBytes = vertBufferSize;
-    vertexBufferView.StrideInBytes = sizeof(Vertex);
+    vBufferView.BufferLocation = vBuffer->GetGPUVirtualAddress();
+    vBufferView.SizeInBytes = vBufferSize;
+    vBufferView.StrideInBytes = sizeof(Vertex);
 
-    ComPtr<ID3D12Resource> indexBuffer;
-    const UINT idxBufferSize = sizeof(UINT) * (UINT)inum;
-    D3D12_RESOURCE_DESC idxDesc = CD3DX12_RESOURCE_DESC::Buffer(idxBufferSize);
+    const UINT iBufferSize = sizeof(UINT) * (UINT)inum;
+    D3D12_RESOURCE_DESC idxDesc = CD3DX12_RESOURCE_DESC::Buffer(iBufferSize);
     ThrowIfFailed(device->CreateCommittedResource(
         &prop, D3D12_HEAP_FLAG_NONE,
         &idxDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr, IID_PPV_ARGS(&indexBuffer)
+        nullptr, IID_PPV_ARGS(&iBuffer)
     ));
     //TODO: Try to convert committed resources into placed resources for vertex buffers
 
-    UINT8 *pIdxDataBegin;
-    ThrowIfFailed(indexBuffer->Map(0, &readRange, (void**)&pIdxDataBegin));
-    memcpy(pIdxDataBegin, idx, idxBufferSize);
-    indexBuffer->Unmap(0, nullptr);
+    UINT8 *piBuffer;
+    ThrowIfFailed(iBuffer->Map(0, &readRange, (void**)&piBuffer));
+    memcpy(piBuffer, idx, iBufferSize);
+    iBuffer->Unmap(0, nullptr);
 
-    D3D12_INDEX_BUFFER_VIEW idxBufferView;
-    idxBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
-    idxBufferView.SizeInBytes = idxBufferSize;
-    idxBufferView.Format = DXGI_FORMAT_R32_UINT;
+    iBufferView.BufferLocation = iBuffer->GetGPUVirtualAddress();
+    iBufferView.SizeInBytes = iBufferSize;
+    iBufferView.Format = DXGI_FORMAT_R32_UINT;
 
     WaitForGPU();
-    int index = (int)drawData.vertBuffers.size();
-    drawData.vertBuffers.push_back(vertexBuffer);
-    drawData.vertBufferViews.push_back(vertexBufferView);
-    drawData.idxBuffers.push_back(indexBuffer);
-    drawData.idxBufferViews.push_back(idxBufferView);
-    return index;
+    return draws;
 }
 
 Camera initCamera(int width, int height) {
@@ -403,8 +390,8 @@ void RecordDraws(int vbufferIndex, int ibufferIndex, UINT idxStart, UINT idxCoun
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
 
     cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    cmdlist->IASetVertexBuffers(0, 1, &drawData.vertBufferViews[vbufferIndex]);
-    cmdlist->IASetIndexBuffer(&drawData.idxBufferViews[ibufferIndex]);
+    cmdlist->IASetVertexBuffers(0, 1, &vBufferView);
+    cmdlist->IASetIndexBuffer(&iBufferView);
     cmdlist->DrawIndexedInstanced(idxCount, 1, idxStart, vertOffset, 0);
 }
 

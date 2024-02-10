@@ -26,7 +26,6 @@ D3D12_RECT rect[] = { CD3DX12_RECT(0, 0, WIDTH, HEIGHT) };
 
 int rootSigIndex = 0;
 int PSOIndex = 0;
-int vbufferIndex = 0;
 
 Vertex cube[] = {
     { {-0.25f, -0.25f, -0.25f}, {0.f, 0.f} },
@@ -47,7 +46,6 @@ UINT idx[] = {
     4, 5, 0, 0, 5, 1,
 };
 Draws draws;
-
 Camera cam;
 
 void cameraInputs(SDL_Event *e);
@@ -79,12 +77,7 @@ void setup() {
     PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");
 
     UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
-    vbufferIndex = Render::UploadDrawData(model, draws);
-
-    for (int i = 0; i < draws.vertStart.size(); i++) {
-        printf("[APP] draw[%i] verts -> (%i, %i)\n", i, draws.vertStart[i], draws.vertCount[i]);
-        printf("[APP] draw[%i] index -> (%i, %i)\n", i, draws.idxStart[i], draws.idxCount[i]);
-    }
+    draws = Render::UploadDrawData(model);
     cam = Render::initCamera(WIDTH, HEIGHT);
 }
 
@@ -104,7 +97,7 @@ void step() {
     //TODO: Check if we really need start/end frame functions
     Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
     Render::UseCamera(cam);
-    Render::RecordDraws(vbufferIndex, vbufferIndex, draws.idxStart[0], draws.idxCount[0], draws.vertStart[0]);
+    Render::RecordDraws(0, 0, draws.idxStart[0], draws.idxCount[0], draws.vertStart[0]);
     UI::drawUI(cam);
     Render::EndFrame();
 
