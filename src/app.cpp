@@ -54,8 +54,9 @@ Draws draws;
 
 Camera cam;
 struct CamInputs {
-    int fwd = 0;
-    int left = 0;
+    bool fwd, bwd;
+    bool left, right;
+    bool up, down;
 } camInputs;
 
 void Update(float delta, float elapsed);
@@ -128,14 +129,20 @@ void Update(float delta, float elapsed) {
         }
 
         if (e.type == SDL_KEYDOWN) {
-            if (e.key.keysym.sym == SDLK_w) camInputs.fwd =  1;
-            if (e.key.keysym.sym == SDLK_s) camInputs.fwd = -1;
-            if (e.key.keysym.sym == SDLK_a) camInputs.left =  1;
-            if (e.key.keysym.sym == SDLK_d) camInputs.left = -1;
+            camInputs.fwd = e.key.keysym.sym == SDLK_w;
+            camInputs.bwd = e.key.keysym.sym == SDLK_s;
+            camInputs.left = e.key.keysym.sym == SDLK_a;
+            camInputs.right = e.key.keysym.sym == SDLK_d;
+            camInputs.up = e.key.keysym.sym == SDLK_q;
+            camInputs.down = e.key.keysym.sym == SDLK_e;
         }
         else if (e.type == SDL_KEYUP) {
-            if (e.key.keysym.sym == SDLK_w || e.key.keysym.sym == SDLK_s) camInputs.fwd =  0;
-            if (e.key.keysym.sym == SDLK_a || e.key.keysym.sym == SDLK_d) camInputs.left =  0;
+            if (e.key.keysym.sym == SDLK_w) camInputs.fwd = false;
+            if (e.key.keysym.sym == SDLK_s) camInputs.bwd = false;
+            if (e.key.keysym.sym == SDLK_a) camInputs.left = false;
+            if (e.key.keysym.sym == SDLK_d) camInputs.right = false;
+            if (e.key.keysym.sym == SDLK_q) camInputs.up = false;
+            if (e.key.keysym.sym == SDLK_e) camInputs.down = false;
         }
 
         if (e.type == SDL_MOUSEWHEEL) {
@@ -152,20 +159,27 @@ void Update(float delta, float elapsed) {
 }
 
 void UpdateCamera(float delta, float elapsed) {
-    if (camInputs.fwd > 0) {
+    if (camInputs.fwd) {
         cam.pos += XMVector3Normalize(cam.forward) * delta * Camera::speed;
     }
-    else if (camInputs.fwd < 0) {
+    else if (camInputs.bwd) {
         cam.pos -= XMVector3Normalize(cam.forward) * delta * Camera::speed;
     }
 
-    if (camInputs.left > 0) {
+    if (camInputs.left) {
         XMVECTOR left = XMVector3Normalize(XMVector3Cross(cam.forward, cam.up));
         cam.pos += left * delta * Camera::speed;
     }
-    else if (camInputs.left < 0) {
+    else if (camInputs.right) {
         XMVECTOR left = XMVector3Normalize(XMVector3Cross(cam.forward, cam.up));
         cam.pos -= left * delta * Camera::speed;
+    }
+
+    if (camInputs.up) {
+        cam.pos += XMVector3Normalize(cam.up) * delta * Camera::speed;
+    }
+    else if (camInputs.down) {
+        cam.pos -= XMVector3Normalize(cam.up) * delta * Camera::speed;
     }
 }
 
