@@ -5,12 +5,15 @@
 #include "SDL.h"
 #include "Tracy.hpp"
 
-#include <DirectXMath.h>
 #include <d3dx12.h>
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <filesystem>
+
+struct CamMatrices {
+    DirectX::XMMATRIX mvp;
+};
 
 namespace App {
 using namespace DirectX;
@@ -31,6 +34,7 @@ D3D12_RECT rect[] = { CD3DX12_RECT(0, 0, WIDTH, HEIGHT) };
 
 int rootSigIndex = 0;
 int PSOIndex = 0;
+int camCBIndex = 0;
 
 Vertex cube[] = {
     { {-0.25f, -0.25f, -0.25f}, {0.f, 0.f} },
@@ -58,10 +62,13 @@ struct CamInputs {
     bool left, right;
     bool up, down;
 } camInputs;
+CamMatrices matrices;
 
 void Update(float delta, float elapsed);
-void UpdateCamera(float delta, float elapsed);
 void Render();
+
+Camera InitCamera(float width, float height);
+void UpdateCamera(float delta, float elapsed);
 
 void Setup() {
     printf("[APP] Data path is setup %s\n", PATH);
@@ -92,7 +99,8 @@ void Setup() {
 
     UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
     draws = Render::UploadDrawData(model);
-    cam = Render::InitCamera(WIDTH, HEIGHT);
+    cam = InitCamera(WIDTH, HEIGHT);
+    camCBIndex = Render::CreateBufferedCB(sizeof(CamMatrices));
 }
 
 void Step() {
@@ -158,6 +166,24 @@ void Update(float delta, float elapsed) {
     UpdateCamera(delta, elapsed);
 }
 
+void Render() {
+    ZoneScoped;
+
+    //TODO: I have to review this process, interface is bad
+    Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
+    Render::BindBufferedCB(camCBIndex, (void*)&matrices, sizeof(CamMatrices));
+    Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
+    UI::DrawUI(cam);
+    Render::EndFrame();
+}
+
+Camera InitCamera(float width, float height) {
+    return {
+        45.f, (float)width / height, 0.1f, 100000.f,
+        {-5.f, -5.f, -5.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
+    };
+}
+
 void UpdateCamera(float delta, float elapsed) {
     if (camInputs.fwd) {
         cam.pos += XMVector3Normalize(cam.forward) * delta * Camera::speed;
@@ -181,17 +207,11 @@ void UpdateCamera(float delta, float elapsed) {
     else if (camInputs.down) {
         cam.pos -= XMVector3Normalize(cam.up) * delta * Camera::speed;
     }
-}
 
-void Render() {
-    ZoneScoped;
-
-    //TODO: I have to review this process, interface is bad
-    Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
-    Render::UseCamera(cam);
-    Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
-    UI::DrawUI(cam);
-    Render::EndFrame();
+    XMMATRIX model = XMMatrixIdentity();
+    XMMATRIX view = XMMatrixLookToLH(cam.pos, cam.forward, cam.up);
+    XMMATRIX persp = XMMatrixPerspectiveFovLH(XMConvertToRadians(cam.fov), cam.ratio, cam.nearp, cam.farp);
+    matrices.mvp = model * view * persp;
 }
 
 }

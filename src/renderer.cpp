@@ -17,10 +17,6 @@ namespace Render {
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
-struct CamMatrices {
-    XMMATRIX mvp;
-};
-
 UINT rtvDescSize;
 
 // Dx12 objects
@@ -32,7 +28,6 @@ ComPtr<IDXGISwapChain4> swapchain;
 ComPtr<ID3D12DescriptorHeap> rtvheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
-ComPtr<ID3D12Resource> cameraBuffers[FRAME_COUNT]; //TODO: Do we need to handle more than once camera
 
 ComPtr<ID3D12Resource> vBuffer;
 D3D12_VERTEX_BUFFER_VIEW vBufferView;
@@ -43,6 +38,8 @@ struct Pipelines {
     std::vector<ComPtr<ID3D12RootSignature>> rootSigs;
     std::vector<ComPtr<ID3D12PipelineState>> PSOs;
 } pipelines;
+
+std::vector<ComPtr<ID3D12Resource>> bufferedCBs;
 
 // Shader Compiler objects
 ComPtr<IDxcCompiler3> compiler;
@@ -274,6 +271,25 @@ int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
     return index;
 }
 
+int CreateBufferedCB(size_t bufferSize) {
+    D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+    D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
+
+    int index = (int)bufferedCBs.size();
+    for (UINT i = 0; i < FRAME_COUNT; i++) {
+        ComPtr<ID3D12Resource> buffer;
+        ThrowIfFailed(device->CreateCommittedResource(
+            &prop, D3D12_HEAP_FLAG_NONE ,
+            &desc, D3D12_RESOURCE_STATE_GENERIC_READ, //Needs to stay generic_read because upload heap
+            nullptr, IID_PPV_ARGS(&buffer)
+        ));
+        //TODO: Maybe try to create placed resources from a given heap
+
+        bufferedCBs.push_back(buffer);
+    }
+    return index;
+}
+
 Draws UploadDrawData(std::span<UploadData> uploadData) {
     Draws draws;
     draws.idxCount.resize(uploadData.size());
@@ -337,41 +353,16 @@ Draws UploadDrawData(std::span<UploadData> uploadData) {
     return draws;
 }
 
-Camera InitCamera(int width, int height) {
-    D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-    D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(CamMatrices));
-
-    for (UINT i = 0; i < FRAME_COUNT; i++) {
-        ThrowIfFailed(device->CreateCommittedResource(
-            &prop, D3D12_HEAP_FLAG_NONE ,
-            &desc, D3D12_RESOURCE_STATE_GENERIC_READ, //Needs to stay generic_read because upload heap
-            nullptr, IID_PPV_ARGS(&cameraBuffers[i])
-        ));
-    }
-
-    return {
-        45.f, (float)width / height, 0.1f, 100000.f,
-        {-5.f, -5.f, -5.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
-    };
-}
-
-void UseCamera(Camera &cam) {
-    XMMATRIX model = XMMatrixIdentity();
-    XMMATRIX view = XMMatrixLookToLH(cam.pos, cam.forward, cam.up);
-    XMMATRIX persp = XMMatrixPerspectiveFovLH(XMConvertToRadians(cam.fov), cam.ratio, cam.nearp, cam.farp);
-
-    CamMatrices camData;
-    camData.mvp = model * view * persp;
-
-    ComPtr<ID3D12Resource> buffer = cameraBuffers[frameIndex];
+void BindBufferedCB(int CBIndex, void *data, size_t length) {
+    ComPtr<ID3D12Resource> buffer = bufferedCBs[CBIndex + frameIndex];
     CD3DX12_RANGE readRange(0, 0);
     UINT8* bufferStart = nullptr;
     ThrowIfFailed(buffer->Map(0, &readRange, (void**)&bufferStart));
-    memcpy(bufferStart, &camData, sizeof(CamMatrices));
+    memcpy(bufferStart, data, length);
     buffer->Unmap(0, nullptr);
 
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-    cmdlist->SetGraphicsRootConstantBufferView(0, cameraBuffers[frameIndex]->GetGPUVirtualAddress());
+    cmdlist->SetGraphicsRootConstantBufferView(0, buffer->GetGPUVirtualAddress());
 }
 
 void RecordDraws(UINT idxCount, UINT idxStart, INT vertOffset) {
