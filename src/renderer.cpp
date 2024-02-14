@@ -162,7 +162,7 @@ void Setup(HWND hwnd, int width, int height) {
         ThrowIfFailed(utils->CreateDefaultIncludeHandler(&inclHandler));
     }
     ctx = TracyD3D12Context(device.Get(), queue.Get());
-    UI::InitRender(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM, imguiheap.Get());
+    UI::initRender(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM, imguiheap.Get());
 }
 
 void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex) {
@@ -192,7 +192,7 @@ void EndFrame() {
     //TODO: Is this logic at the right spot?
     ID3D12DescriptorHeap *heaps { imguiheap.Get() };
     cmdLists[frameIndex]->SetDescriptorHeaps(1, &heaps);
-    UI::EndFrame(cmdLists[frameIndex].Get());
+    UI::endFrame(cmdLists[frameIndex].Get());
 
     D3D12_RESOURCE_BARRIER presentBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT

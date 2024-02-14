@@ -84,7 +84,7 @@ int run() {
     }
 
     Render::Teardown();
-    UI::Teardown();
+    UI::teardown();
 
     printf("[APP] Teardown SDL2 ...\n");
     SDL_DestroyWindow(window);
@@ -108,7 +108,7 @@ void setup() {
     }
 
     hwnd = GetActiveWindow();
-    UI::InitApp(window);
+    UI::initApp(window);
     Render::Setup(hwnd, WIDTH, HEIGHT);
 
     //TODO: Find a simpler structure to specify root signature parameters
@@ -128,7 +128,7 @@ bool update(float delta, float elapsed) {
 
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
-        UI::Update(&e);
+        UI::update(&e);
 
         if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
             return false;
@@ -172,7 +172,7 @@ void render() {
     Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
     Render::BindBufferedCB(camCBIndex, (void*)&matrices, sizeof(CamMatrices));
     Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
-    UI::DrawUI(cam);
+    UI::drawUI(cam);
     Render::EndFrame();
 }
 
