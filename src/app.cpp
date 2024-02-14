@@ -9,7 +9,6 @@
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <filesystem>
 
 struct CamMatrices {
     DirectX::XMMATRIX mvp;
@@ -23,11 +22,8 @@ using namespace DirectX;
 #define TITLE "[pre-alpha] MP-Explorer"
 #define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
 
-bool running = true;
 HWND hwnd;
 SDL_Window *window;
-UINT64 startStamp;
-UINT64 lastStamp;
 
 D3D12_VIEWPORT vp[] = { CD3DX12_VIEWPORT(0.f, 0.f, (float)WIDTH, (float)HEIGHT) };
 D3D12_RECT rect[] = { CD3DX12_RECT(0, 0, WIDTH, HEIGHT) };
@@ -66,42 +62,50 @@ CamMatrices matrices;
 
 void setup();
 void step();
-void teardown();
+
+bool update(float delta, float elapsed);
+void render();
 
 int run() {
+    UINT64 startStamp;
+    UINT64 lastStamp;
+    startStamp = lastStamp = SDL_GetTicks64();
     setup();
 
+    bool running = true;
     while (running) {
-        step();
+        UINT64 current = SDL_GetTicks64();
+        float delta = (current - lastStamp) / 1000.f;
+        float elapsed = (current - startStamp) / 1000.f;
+        lastStamp = current;
+
+        running = update(delta, elapsed);
+        render();
     }
 
-    teardown();
+    Render::Teardown();
+    UI::Teardown();
+
+    printf("[APP] Teardown SDL2 ...\n");
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
     return 0;
 }
-
-void update(float delta, float elapsed);
-void render();
 
 Camera initCamera(float width, float height);
 void updateCamera(float delta, float elapsed);
 
 void setup() {
-    printf("[APP] Data path is setup %s\n", PATH);
-    for (const auto &entry : std::filesystem::directory_iterator(PATH)) {
-        printf(" - '%ls'\n", entry.path().c_str());
-    }
     printf("[APP] Setting up SDL2 ...\n");
-
     window = nullptr;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("[ERR] Failed to init SDL2 : %s\n", SDL_GetError());
     }
-    startStamp = lastStamp = SDL_GetTicks64();
     window = SDL_CreateWindow(TITLE, WINDOW_POS, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
         printf("[ERR] Failed to create SDL2 window %s\n", SDL_GetError());
     }
-    running = true;
 
     hwnd = GetActiveWindow();
     UI::InitApp(window);
@@ -118,29 +122,7 @@ void setup() {
     camCBIndex = Render::CreateBufferedCB(sizeof(CamMatrices));
 }
 
-void step() {
-    ZoneScoped;
-    UINT64 current = SDL_GetTicks64();
-    float delta = (current - lastStamp) / 1000.f;
-    float elapsed = (current - startStamp) / 1000.f;
-    lastStamp = current;
-
-    update(delta, elapsed);
-    render();
-
-    FrameMark;
-}
-
-void teardown() {
-    Render::Teardown();
-    UI::Teardown();
-
-    printf("[APP] Teardown SDL2 ...\n");
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-void update(float delta, float elapsed) {
+bool update(float delta, float elapsed) {
     ZoneScoped;
 
     SDL_Event e;
@@ -148,7 +130,7 @@ void update(float delta, float elapsed) {
         UI::Update(&e);
 
         if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
-            running = false;
+            return false;
         }
 
         if (e.type == SDL_KEYDOWN) {
@@ -179,6 +161,7 @@ void update(float delta, float elapsed) {
     }
 
     updateCamera(delta, elapsed);
+    return true;
 }
 
 void render() {
