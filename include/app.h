@@ -19,10 +19,6 @@ struct Camera {
 
 namespace App {
 
-extern bool running;
-
-void Setup();
-void Step();
-void Teardown();
+int run();
 
 }

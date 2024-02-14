@@ -64,13 +64,28 @@ struct CamInputs {
 } camInputs;
 CamMatrices matrices;
 
-void Update(float delta, float elapsed);
-void Render();
+void setup();
+void step();
+void teardown();
 
-Camera InitCamera(float width, float height);
-void UpdateCamera(float delta, float elapsed);
+int run() {
+    setup();
 
-void Setup() {
+    while (running) {
+        step();
+    }
+
+    teardown();
+    return 0;
+}
+
+void update(float delta, float elapsed);
+void render();
+
+Camera initCamera(float width, float height);
+void updateCamera(float delta, float elapsed);
+
+void setup() {
     printf("[APP] Data path is setup %s\n", PATH);
     for (const auto &entry : std::filesystem::directory_iterator(PATH)) {
         printf(" - '%ls'\n", entry.path().c_str());
@@ -99,24 +114,24 @@ void Setup() {
 
     UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
     draws = Render::UploadDrawData(model);
-    cam = InitCamera(WIDTH, HEIGHT);
+    cam = initCamera(WIDTH, HEIGHT);
     camCBIndex = Render::CreateBufferedCB(sizeof(CamMatrices));
 }
 
-void Step() {
+void step() {
     ZoneScoped;
     UINT64 current = SDL_GetTicks64();
     float delta = (current - lastStamp) / 1000.f;
     float elapsed = (current - startStamp) / 1000.f;
     lastStamp = current;
 
-    Update(delta, elapsed);
-    Render();
+    update(delta, elapsed);
+    render();
 
     FrameMark;
 }
 
-void Teardown() {
+void teardown() {
     Render::Teardown();
     UI::Teardown();
 
@@ -125,7 +140,7 @@ void Teardown() {
     SDL_Quit();
 }
 
-void Update(float delta, float elapsed) {
+void update(float delta, float elapsed) {
     ZoneScoped;
 
     SDL_Event e;
@@ -163,10 +178,10 @@ void Update(float delta, float elapsed) {
         }
     }
 
-    UpdateCamera(delta, elapsed);
+    updateCamera(delta, elapsed);
 }
 
-void Render() {
+void render() {
     ZoneScoped;
 
     //TODO: I have to review this process, interface is bad
@@ -177,14 +192,14 @@ void Render() {
     Render::EndFrame();
 }
 
-Camera InitCamera(float width, float height) {
+Camera initCamera(float width, float height) {
     return {
         45.f, (float)width / height, 0.1f, 100000.f,
         {-5.f, -5.f, -5.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
     };
 }
 
-void UpdateCamera(float delta, float elapsed) {
+void updateCamera(float delta, float elapsed) {
     if (camInputs.fwd) {
         cam.pos += XMVector3Normalize(cam.forward) * delta * Camera::speed;
     }

@@ -1,12 +1,11 @@
 #include "app.h"
+#include "cstdio"
 
 int main(int argc, char **argv) {
-    App::Setup();
+    //TODO: Parse command line args
 
-    while(App::running) {
-        App::Step();
-    }
+    int ret = App::run();
+    printf("[MAIN] Done running, return code: %i\n", ret);
 
-    App::Teardown();
-    return 0;
+    return ret;
 }
