@@ -111,6 +111,7 @@ void setup() {
     UI::InitApp(window);
     Render::Setup(hwnd, WIDTH, HEIGHT);
 
+    //TODO: Find a simpler structure to specify root signature parameters
     D3D12_ROOT_PARAMETER camCBV;
     CD3DX12_ROOT_PARAMETER::InitAsConstantBufferView(camCBV, 0);
     rootSigIndex = Render::CreateRootSignature({ &camCBV, 1 }, {});
