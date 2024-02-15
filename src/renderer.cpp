@@ -165,7 +165,7 @@ void Setup(HWND hwnd, int width, int height) {
     UI::initRender(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM, imguiheap.Get());
 }
 
-void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex) {
+void StartFrame(UINT originX, UINT originY, UINT width, UINT height, int rootSigIndex, int psoIndex) {
     ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
     ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
     ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), pipelines.PSOs[psoIndex].Get()));
@@ -176,8 +176,10 @@ void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> sciss
     cmdlist->ResourceBarrier(1, &targetBarrier);
 
     //TODO: Do we have to split this into separate function
-    cmdlist->RSSetViewports((UINT)viewports.size(), viewports.data());
-    cmdlist->RSSetScissorRects((UINT)scissors.size(), scissors.data());
+    D3D12_VIEWPORT vp {(float)originX, (float)originY, (float)width, (float)height};
+    cmdlist->RSSetViewports(1, &vp);
+    D3D12_RECT scissors {(LONG)originX, (LONG)originY, (LONG)width, (LONG)height};
+    cmdlist->RSSetScissorRects(1, &scissors);
 
     //TODO: Handle giving a custom render target? Or split into function
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
@@ -215,9 +217,24 @@ void Teardown() {
     CloseHandle(fenceEvent);
 }
 
-int CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers) {
+int CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers) {
+    D3D12_ROOT_PARAMETER rootparams[32]; //TODO: Look into this as a max value
+    for (int i = 0; i < params.size(); i++) {
+        CD3DX12_ROOT_PARAMETER p;
+        if (params[i].descriptorType == RootSigParam::SRVDescriptor) {
+            p.InitAsShaderResourceView(params[i].descriptorIndex);
+        }
+        else if (params[i].descriptorType == RootSigParam::CBVDescriptor) {
+            p.InitAsConstantBufferView(params[i].descriptorIndex);
+        }
+        else if (params[i].descriptorType == RootSigParam::UAVDescriptor) {
+            p.InitAsUnorderedAccessView(params[i].descriptorIndex);
+        }
+        rootparams[i] = p;
+    }
+
     CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
-    rootdesc.Init((UINT)params.size(), params.data(), (UINT)samplers.size(), samplers.data(),
+    rootdesc.Init((UINT)params.size(), rootparams, 0, nullptr,
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> sign;

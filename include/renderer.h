@@ -24,17 +24,27 @@ struct Draws {
     std::vector<UINT> vertStart;
 };
 
-struct D3D12_ROOT_PARAMETER;
-struct D3D12_STATIC_SAMPLER_DESC;
+struct RootSigParam {
+    enum Type { None, SRVDescriptor, CBVDescriptor, UAVDescriptor };
+    Type descriptorType;
+    UINT descriptorIndex;
+
+    //TODO: Add parameters for descriptor tables
+    //TODO: Add parameters for constants
+};
+
+struct RootSigSample {
+    //TODO: To fill in
+};
 
 namespace Render {
 
 void Setup(HWND hwnd, int width, int height);
-void StartFrame(std::span<D3D12_VIEWPORT> viewports, std::span<D3D12_RECT> scissors, int rootSigIndex, int psoIndex);
+void StartFrame(UINT originX, UINT originY, UINT width, UINT height, int rootSigIndex, int psoIndex);
 void EndFrame();
 void Teardown();
 
-int CreateRootSignature(std::span<D3D12_ROOT_PARAMETER> params, std::span<D3D12_STATIC_SAMPLER_DESC> samplers);
+int CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers);
 int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry);
 int CreateBufferedCB(size_t bufferSize);
 Draws UploadDrawData(std::span<UploadData> uploadData);

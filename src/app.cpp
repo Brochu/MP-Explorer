@@ -5,7 +5,6 @@
 #include "SDL.h"
 #include "Tracy.hpp"
 
-#include <d3dx12.h>
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -25,8 +24,8 @@ using namespace DirectX;
 HWND hwnd;
 SDL_Window *window;
 
-D3D12_VIEWPORT vp[] = { CD3DX12_VIEWPORT(0.f, 0.f, (float)WIDTH, (float)HEIGHT) };
-D3D12_RECT rect[] = { CD3DX12_RECT(0, 0, WIDTH, HEIGHT) };
+UINT ssOriginX = 0;
+UINT ssOriginY = 0;
 
 int rootSigIndex = 0;
 int PSOIndex = 0;
@@ -111,10 +110,8 @@ void setup() {
     UI::initApp(window);
     Render::Setup(hwnd, WIDTH, HEIGHT);
 
-    //TODO: Find a simpler structure to specify root signature parameters
-    D3D12_ROOT_PARAMETER camCBV;
-    CD3DX12_ROOT_PARAMETER::InitAsConstantBufferView(camCBV, 0);
-    rootSigIndex = Render::CreateRootSignature({ &camCBV, 1 }, {});
+    RootSigParam params[] { {RootSigParam::Type::CBVDescriptor, 0} };
+    rootSigIndex = Render::CreateRootSignature(params, {});
     PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");
 
     UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
@@ -169,7 +166,7 @@ void render() {
     ZoneScoped;
 
     //TODO: I have to review this process, interface is bad
-    Render::StartFrame(vp, rect, rootSigIndex, PSOIndex);
+    Render::StartFrame(ssOriginX, ssOriginY, WIDTH, HEIGHT, rootSigIndex, PSOIndex);
     Render::BindBufferedCB(camCBIndex, (void*)&matrices, sizeof(CamMatrices));
     Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
     UI::drawUI(cam);
