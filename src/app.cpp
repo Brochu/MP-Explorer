@@ -1,4 +1,5 @@
 #include "app.h"
+#include "camera.h"
 #include "debugui.h"
 #include "renderer.h"
 
@@ -8,6 +9,7 @@
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <DirectXMath.h>
 
 struct CamMatrices {
     DirectX::XMMATRIX mvp;
@@ -52,12 +54,8 @@ UINT idx[] = {
 Draws draws;
 
 Camera cam;
-struct CamInputs {
-    bool fwd, bwd;
-    bool left, right;
-    bool up, down;
-} camInputs;
-CamMatrices matrices;
+CameraInputs camIn;
+CamMatrices camMat;
 
 void setup();
 void step();
@@ -91,9 +89,6 @@ int run() {
 
     return 0;
 }
-
-Camera initCamera(float width, float height);
-void updateCamera(float delta, float elapsed);
 
 void setup() {
     printf("[APP] Setting up SDL2 ...\n");
@@ -130,35 +125,16 @@ bool update(float delta, float elapsed) {
         if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
             return false;
         }
-
-        if (e.type == SDL_KEYDOWN) {
-            camInputs.fwd = e.key.keysym.sym == SDLK_w;
-            camInputs.bwd = e.key.keysym.sym == SDLK_s;
-            camInputs.left = e.key.keysym.sym == SDLK_a;
-            camInputs.right = e.key.keysym.sym == SDLK_d;
-            camInputs.up = e.key.keysym.sym == SDLK_q;
-            camInputs.down = e.key.keysym.sym == SDLK_e;
-        }
-        else if (e.type == SDL_KEYUP) {
-            if (e.key.keysym.sym == SDLK_w) camInputs.fwd = false;
-            if (e.key.keysym.sym == SDLK_s) camInputs.bwd = false;
-            if (e.key.keysym.sym == SDLK_a) camInputs.left = false;
-            if (e.key.keysym.sym == SDLK_d) camInputs.right = false;
-            if (e.key.keysym.sym == SDLK_q) camInputs.up = false;
-            if (e.key.keysym.sym == SDLK_e) camInputs.down = false;
-        }
-
-        if (e.type == SDL_MOUSEWHEEL) {
-            if (e.wheel.y > 0) {
-                cam.fov = max(Camera::min_fov, cam.fov - Camera::fov_speed);
-            }
-            else if (e.wheel.y < 0) {
-                cam.fov = min(Camera::max_fov, cam.fov + Camera::fov_speed);
-            }
-        }
+        updateCamera(&e, camIn, cam);
     }
 
-    updateCamera(delta, elapsed);
+    moveCamera(cam, camIn, delta, elapsed);
+    //TODO: Do we have to move this
+    XMMATRIX model = XMMatrixIdentity();
+    XMMATRIX view = XMMatrixLookToLH(cam.pos, cam.forward, cam.up);
+    XMMATRIX persp = XMMatrixPerspectiveFovLH(XMConvertToRadians(cam.fov), cam.ratio, cam.nearp, cam.farp);
+    camMat.mvp = model * view * persp;
+
     return true;
 }
 
@@ -167,47 +143,10 @@ void render() {
 
     //TODO: I have to review this process, interface is bad
     Render::StartFrame(ssOriginX, ssOriginY, WIDTH, HEIGHT, rootSigIndex, PSOIndex);
-    Render::BindBufferedCB(camCBIndex, (void*)&matrices, sizeof(CamMatrices));
+    Render::BindBufferedCB(camCBIndex, (void*)&camMat, sizeof(CamMatrices));
     Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
     UI::drawUI(cam);
     Render::EndFrame();
-}
-
-Camera initCamera(float width, float height) {
-    return {
-        45.f, (float)width / height, 0.1f, 100000.f,
-        {-5.f, -5.f, -5.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
-    };
-}
-
-void updateCamera(float delta, float elapsed) {
-    if (camInputs.fwd) {
-        cam.pos += XMVector3Normalize(cam.forward) * delta * Camera::speed;
-    }
-    else if (camInputs.bwd) {
-        cam.pos -= XMVector3Normalize(cam.forward) * delta * Camera::speed;
-    }
-
-    if (camInputs.left) {
-        XMVECTOR left = XMVector3Normalize(XMVector3Cross(cam.forward, cam.up));
-        cam.pos += left * delta * Camera::speed;
-    }
-    else if (camInputs.right) {
-        XMVECTOR left = XMVector3Normalize(XMVector3Cross(cam.forward, cam.up));
-        cam.pos -= left * delta * Camera::speed;
-    }
-
-    if (camInputs.up) {
-        cam.pos += XMVector3Normalize(cam.up) * delta * Camera::speed;
-    }
-    else if (camInputs.down) {
-        cam.pos -= XMVector3Normalize(cam.up) * delta * Camera::speed;
-    }
-
-    XMMATRIX model = XMMatrixIdentity();
-    XMMATRIX view = XMMatrixLookToLH(cam.pos, cam.forward, cam.up);
-    XMMATRIX persp = XMMatrixPerspectiveFovLH(XMConvertToRadians(cam.fov), cam.ratio, cam.nearp, cam.farp);
-    matrices.mvp = model * view * persp;
 }
 
 }

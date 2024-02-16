@@ -1,5 +1,5 @@
 #include "debugui.h"
-#include "app.h"
+#include "camera.h"
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
