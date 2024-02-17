@@ -13,6 +13,7 @@ set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/camera.h
     ${CMAKE_CURRENT_LIST_DIR}/include/debugui.h
     ${CMAKE_CURRENT_LIST_DIR}/include/renderer.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/world.h
 )
 set (imgui_headers
     ${CMAKE_CURRENT_LIST_DIR}/include/imgui/imconfig.h
@@ -31,6 +32,7 @@ set (source
     ${CMAKE_CURRENT_LIST_DIR}/src/camera.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debugui.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/renderer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/world.cpp
 )
 set (imgui_source
     ${CMAKE_CURRENT_LIST_DIR}/src/imgui/imgui.cpp
