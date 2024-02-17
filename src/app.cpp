@@ -95,9 +95,8 @@ int run() {
 void setup() {
     printf("[APP] Loading world config data ...\n");
     world = Config::initWorld();
-    for (Room &room : world.levels[world.levelIndex]) {
-        printf(" - '%ls'\n", room.path.c_str());
-    }
+    //TODO: Testing, to remove later
+    Config::loadRoom(world, 3);
 
     printf("[APP] Setting up SDL2 ...\n");
     window = nullptr;
@@ -111,9 +110,9 @@ void setup() {
 
     hwnd = GetActiveWindow();
     UI::initApp(window);
-    Render::Setup(hwnd, WIDTH, HEIGHT);
 
-    printf("[APP] Preparing renderer ...\n");
+    printf("[APP] Init renderer ...\n");
+    Render::Setup(hwnd, WIDTH, HEIGHT);
     RootSigParam params[] { {RootSigParam::Type::CBVDescriptor, 0} };
     rootSigIndex = Render::CreateRootSignature(params, {});
     PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");

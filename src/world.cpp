@@ -1,4 +1,5 @@
 #include "world.h"
+#include <stdio.h>
 
 namespace Config {
 using namespace std::filesystem;
@@ -29,6 +30,25 @@ World initWorld() {
     }
 
     return w;
+}
+
+void loadRoom(World &world, int roomIndex) {
+    //TODO: Load room data
+    // How do we read YAML files
+    // Open and read !area file
+    // We need to store all objs (verts + idx)
+    // Look through default folder only to start
+    std::string path;
+    path.resize(255); //TODO: Maybe change this max value later
+    sprintf_s(path.data(), 255, "%s\\%s\\%ls",
+        PATH,
+        levelFolders[world.levelIndex],
+        world.levels[world.levelIndex][roomIndex].path.c_str()
+    );
+    printf("[WORLD] Room='%s'\n", path.c_str());
+    for (directory_entry entry : directory_iterator(path.c_str())) {
+        printf(" - '%ls'\n", entry.path().filename().c_str());
+    }
 }
 
 }

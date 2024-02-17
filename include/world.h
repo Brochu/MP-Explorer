@@ -16,5 +16,6 @@ struct World {
 namespace Config {
 
 World initWorld();
+void loadRoom(World &world, int roomIndex);
 
 }
