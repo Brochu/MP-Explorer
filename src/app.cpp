@@ -2,6 +2,7 @@
 #include "camera.h"
 #include "debugui.h"
 #include "renderer.h"
+#include "world.h"
 
 #include "SDL.h"
 #include "Tracy.hpp"
@@ -22,6 +23,8 @@ using namespace DirectX;
 #define HEIGHT 768
 #define TITLE "[pre-alpha] MP-Explorer"
 #define WINDOW_POS SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED
+
+World world;
 
 HWND hwnd;
 SDL_Window *window;
@@ -58,7 +61,6 @@ CameraInputs camIn;
 CamMatrices camMat;
 
 void setup();
-void step();
 
 bool update(float delta, float elapsed);
 void render();
@@ -91,6 +93,12 @@ int run() {
 }
 
 void setup() {
+    printf("[APP] Loading world config data ...\n");
+    world = Config::initWorld();
+    for (Room &room : world.levels[world.levelIndex]) {
+        printf(" - '%ls'\n", room.path.c_str());
+    }
+
     printf("[APP] Setting up SDL2 ...\n");
     window = nullptr;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -105,10 +113,12 @@ void setup() {
     UI::initApp(window);
     Render::Setup(hwnd, WIDTH, HEIGHT);
 
+    printf("[APP] Preparing renderer ...\n");
     RootSigParam params[] { {RootSigParam::Type::CBVDescriptor, 0} };
     rootSigIndex = Render::CreateRootSignature(params, {});
     PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");
 
+    printf("[APP] Loading debug model ...\n");
     UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
     draws = Render::UploadDrawData(model);
     cam = initCamera(WIDTH, HEIGHT);
