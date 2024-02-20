@@ -96,7 +96,7 @@ void setup() {
     printf("[APP] Loading world config data ...\n");
     world = Config::initWorld();
     //TODO: Testing, to remove later
-    Config::loadRoom(world, 3);
+    Config::loadRoom(world, 7);
 
     printf("[APP] Setting up SDL2 ...\n");
     window = nullptr;
