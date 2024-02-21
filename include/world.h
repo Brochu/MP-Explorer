@@ -7,20 +7,25 @@
 #define WORLD_NUM 7
 
 struct Geometry {
-    std::vector<DirectX::XMFLOAT3> pos;
-    std::vector<DirectX::XMFLOAT3> uvs;
-    std::vector<DirectX::XMFLOAT3> norm;
-    std::vector<unsigned int> indices;
-    //TODO: Look into interlacing data from arrays
+    DirectX::XMFLOAT3 pos;
+    DirectX::XMFLOAT3 uvs;
+    DirectX::XMFLOAT3 norm;
 };
 
 struct Room {
     std::filesystem::path path;
+
+    int voffset;
+    unsigned int vcount;
+    int ioffset;
+    unsigned int icount;
 };
 
 struct World {
     std::vector<Room> levels[WORLD_NUM];
     int levelIndex = 0;
+    std::vector<Geometry> vertices;
+    std::vector<unsigned int> indices;
 };
 
 namespace Config {
