@@ -308,6 +308,7 @@ int CreateBufferedCB(size_t bufferSize) {
 }
 
 Draws UploadDrawData(std::span<UploadData> uploadData) {
+    //TODO: Look into changing this call to only receive a blob of data
     Draws draws;
     draws.idxCount.resize(uploadData.size());
     draws.idxStart.resize(uploadData.size());

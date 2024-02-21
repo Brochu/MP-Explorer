@@ -8,6 +8,7 @@
 #include <span>
 #include <vector>
 
+//TODO: Need to look into moving this away from the renderer
 struct Vertex {
     DirectX::XMFLOAT3 pos;
     DirectX::XMFLOAT2 tex;
