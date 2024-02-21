@@ -11,6 +11,7 @@ struct Geometry {
     std::vector<DirectX::XMFLOAT3> uvs;
     std::vector<DirectX::XMFLOAT3> norm;
     std::vector<unsigned int> indices;
+    //TODO: Look into interlacing data from arrays
 };
 
 struct Room {
