@@ -23,7 +23,7 @@ struct Room {
 
 struct World {
     std::vector<Room> levels[WORLD_NUM];
-    int levelIndex = 0;
+    int levelIndex = 1;
     std::vector<Geometry> vertices;
     std::vector<unsigned int> indices;
 };

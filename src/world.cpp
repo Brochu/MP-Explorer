@@ -66,17 +66,17 @@ void loadRoom(World &world, int roomIndex) {
 
     sprintf_s(path.data(), 255, "%ls", model.path().c_str());
     printf("[WORLD] Model='%s'\n", path.c_str());
-    //Assimp::Importer imp;
-    //const aiScene *scene = imp.ReadFile(
-    //    path.c_str(),
-    //    aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Quality
-    //);
+    Assimp::Importer imp;
+    const aiScene *scene = imp.ReadFile(
+        path.c_str(),
+        aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Quality
+    );
 
-    //if (scene != nullptr) {
-    //    printf("[WORLD] Model # of meshes = %i\n", scene->mNumMeshes);
-    //} else {
-    //    printf("[WORLD] Could not load file -> %s\n", imp.GetErrorString());
-    //}
+    if (scene != nullptr) {
+        printf("[WORLD] Model # of meshes = %i\n", scene->mNumMeshes);
+    } else {
+        printf("[WORLD] Could not load file -> %s\n", imp.GetErrorString());
+    }
 }
 
 }
