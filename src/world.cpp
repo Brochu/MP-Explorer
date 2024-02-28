@@ -1,8 +1,9 @@
 #include "world.h"
 
 #include "assimp/Importer.hpp"
-#include "assimp/scene.h"
+#include "assimp/material.h"
 #include "assimp/postprocess.h"
+#include "assimp/scene.h"
 #include <stdio.h>
 
 namespace Config {
@@ -77,6 +78,7 @@ void loadRoom(World &world, int roomIndex) {
     } else {
         printf("[WORLD] Could not load file -> %s\n", imp.GetErrorString());
     }
+    //TODO: Need to check if we can read shaders from .blend files
 }
 
 }
