@@ -5,9 +5,13 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <stdio.h>
 
 namespace App {
 using namespace DirectX;
+
+int32_t lastMouseX = 0;
+int32_t lastMouseY = 0;
 
 Camera initCamera(float width, float height) {
     return {
@@ -41,6 +45,17 @@ void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
         else if (e->wheel.y < 0) {
             cam.fov = min(Camera::max_fov, cam.fov + Camera::fov_speed);
         }
+    }
+
+    if (e->type == SDL_MOUSEMOTION) {
+        int32_t dx = e->motion.x - lastMouseX;
+        int32_t dy = e->motion.y - lastMouseY;
+        printf("(%i, %i) + (%i, %i) = (%i, %i)\n",
+            lastMouseX, lastMouseY,
+            dx, dy,
+            e->motion.x, e->motion.y);
+        lastMouseX = e->motion.x;
+        lastMouseY = e->motion.y;
     }
 }
 
