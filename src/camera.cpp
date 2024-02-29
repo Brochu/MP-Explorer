@@ -22,12 +22,12 @@ Camera initCamera(float width, float height) {
 
 void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
     if (e->type == SDL_KEYDOWN) {
-        inputs.fwd = e->key.keysym.sym == SDLK_w;
-        inputs.bwd = e->key.keysym.sym == SDLK_s;
-        inputs.left = e->key.keysym.sym == SDLK_a;
-        inputs.right = e->key.keysym.sym == SDLK_d;
-        inputs.up = e->key.keysym.sym == SDLK_q;
-        inputs.down = e->key.keysym.sym == SDLK_e;
+        if (e->key.keysym.sym == SDLK_w) inputs.fwd = true;
+        if (e->key.keysym.sym == SDLK_s) inputs.bwd = true;
+        if (e->key.keysym.sym == SDLK_a) inputs.left = true;
+        if (e->key.keysym.sym == SDLK_d) inputs.right = true;
+        if (e->key.keysym.sym == SDLK_q) inputs.up = true;
+        if (e->key.keysym.sym == SDLK_e) inputs.down = true;
     }
     else if (e->type == SDL_KEYUP) {
         if (e->key.keysym.sym == SDLK_w) inputs.fwd = false;
