@@ -15,6 +15,9 @@ int32_t lastMouseX = 0;
 int32_t lastMouseY = 0;
 
 Camera initCamera(float width, float height) {
+    // Init mouse data
+    SDL_GetMouseState(&lastMouseX, &lastMouseY);
+
     return {
         45.f, (float)width / height, 0.1f, 100000.f,
         {-5.f, -5.f, -5.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
