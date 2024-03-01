@@ -11,6 +11,10 @@
 namespace App {
 using namespace DirectX;
 
+XMVECTOR basePos = { -5.f, -5.f, -5.f };
+XMVECTOR baseFwd = { 1.f, 1.f, 1.f };
+XMVECTOR baseUp = { 0.f, 1.f, 0.f };
+
 int32_t lastMouseX = 0;
 int32_t lastMouseY = 0;
 
@@ -18,10 +22,7 @@ Camera initCamera(float width, float height) {
     // Init mouse data
     SDL_GetMouseState(&lastMouseX, &lastMouseY);
 
-    return {
-        45.f, (float)width / height, 0.1f, 100000.f,
-        {-5.f, -5.f, -5.f}, {1.f, 1.f, 1.f}, {0.f, 1.f, 0.f}
-    };
+    return { 45.f, (float)width / height, 0.1f, 100000.f, basePos, baseFwd, baseUp };
 }
 
 void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
@@ -65,6 +66,10 @@ void moveCamera(Camera &cam, CameraInputs inputs, float delta, float elapsed) {
     lastMouseY = currMouseY;
 
     //TODO: Rotate camera forward vector
+    // Store theta, phi for angles of rotation
+    // Modify these values based off of mouse motion deltas
+    // Rotate the base forward vector with these angles
+    // Use rotated forward vector for cam movement
 
     // Move camera position
     if (inputs.fwd) {
