@@ -2,6 +2,7 @@
 
 #include "SDL_events.h"
 #include "SDL_keycode.h"
+#include "SDL_mouse.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -46,20 +47,23 @@ void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
             cam.fov = min(Camera::max_fov, cam.fov + Camera::fov_speed);
         }
     }
-
-    if (e->type == SDL_MOUSEMOTION) {
-        int32_t dx = e->motion.x - lastMouseX;
-        int32_t dy = e->motion.y - lastMouseY;
-        printf("(%i, %i) + (%i, %i) = (%i, %i)\n",
-            lastMouseX, lastMouseY,
-            dx, dy,
-            e->motion.x, e->motion.y);
-        lastMouseX = e->motion.x;
-        lastMouseY = e->motion.y;
-    }
 }
 
 void moveCamera(Camera &cam, CameraInputs inputs, float delta, float elapsed) {
+    int currMouseX = 0;
+    int currMouseY = 0;
+    //TODO: Look into capturing mouse pointer in order to stop mouse from going out of bounds
+    SDL_GetMouseState(&currMouseX, &currMouseY);
+    int dx = currMouseX - lastMouseX;
+    int dy = currMouseY - lastMouseY;
+    printf("Current mouse position : (%i, %i) [(%i, %i)]\n", currMouseX, currMouseY, dx, dy);
+
+    lastMouseX = currMouseX;
+    lastMouseY = currMouseY;
+
+    //TODO: Rotate camera forward vector
+
+    // Move camera position
     if (inputs.fwd) {
         cam.pos += XMVector3Normalize(cam.forward) * delta * Camera::speed;
     }
