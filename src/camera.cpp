@@ -76,6 +76,7 @@ void moveCamera(Camera &cam, CameraInputs &inputs, float delta, float elapsed) {
     //TODO: Rotate camera forward vector
     // Rotate the base forward vector with these angles
     // Use rotated forward vector for cam movement
+    //const XMVECTOR quat = XMQuaternionRotationRollPitchYaw(inputs.phi, inputs.theta, 0.f);
 
     // Move camera position
     if (inputs.fwd) {
