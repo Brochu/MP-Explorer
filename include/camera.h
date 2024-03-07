@@ -7,6 +7,9 @@ struct Camera {
     float nearp;
     float farp;
 
+    float theta; // 0 : 359
+    float phi; // -90 : 90
+
     DirectX::XMVECTOR pos;
     DirectX::XMVECTOR forward;
     DirectX::XMVECTOR up;

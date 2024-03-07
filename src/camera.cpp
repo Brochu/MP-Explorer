@@ -22,7 +22,10 @@ Camera initCamera(float width, float height) {
     // Init mouse data
     SDL_GetMouseState(&lastMouseX, &lastMouseY);
 
-    return { 45.f, (float)width / height, 0.1f, 100000.f, basePos, baseFwd, baseUp };
+    return { 45.f, (float)width / height, 0.1f, 100000.f,
+        0.f, 0.f, // Init angles
+        basePos, baseFwd, baseUp // Init vectors
+    };
 }
 
 void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
@@ -60,14 +63,15 @@ void moveCamera(Camera &cam, CameraInputs inputs, float delta, float elapsed) {
     SDL_GetMouseState(&currMouseX, &currMouseY);
     int dx = currMouseX - lastMouseX;
     int dy = currMouseY - lastMouseY;
-    printf("Current mouse position : (%i, %i) [(%i, %i)]\n", currMouseX, currMouseY, dx, dy);
+    printf("Current mouse position : (%i, %i) [(%i, %i)]\n    theta: %f, phi: %f\n",
+           currMouseX, currMouseY, dx, dy, cam.theta, cam.phi);
+    // Store theta, phi for angles of rotation
+    // Modify these values based off of mouse motion deltas
 
     lastMouseX = currMouseX;
     lastMouseY = currMouseY;
 
     //TODO: Rotate camera forward vector
-    // Store theta, phi for angles of rotation
-    // Modify these values based off of mouse motion deltas
     // Rotate the base forward vector with these angles
     // Use rotated forward vector for cam movement
 
