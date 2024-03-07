@@ -7,9 +7,6 @@ struct Camera {
     float nearp;
     float farp;
 
-    float theta; // 0 : 359
-    float phi; // -90 : 90
-
     DirectX::XMVECTOR pos;
     DirectX::XMVECTOR forward;
     DirectX::XMVECTOR up;
@@ -18,12 +15,17 @@ struct Camera {
     constexpr static float max_fov = 125.f;
     constexpr static float speed = 10.f;
     constexpr static float fov_speed = 2.f;
+    constexpr static float hsens = 1.0f;
+    constexpr static float vsens = 0.5f;
 };
 
 struct CameraInputs {
     bool fwd, bwd;
     bool left, right;
     bool up, down;
+
+    float theta; // 0 : 359
+    float phi; // -90 : 90
 };
 
 union SDL_Event;
@@ -32,6 +34,6 @@ namespace App {
 
 Camera initCamera(float width, float height);
 void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam);
-void moveCamera(Camera &cam, CameraInputs inputs, float delta, float elapsed);
+void moveCamera(Camera &cam, CameraInputs &inputs, float delta, float elapsed);
 
 };

@@ -22,10 +22,7 @@ Camera initCamera(float width, float height) {
     // Init mouse data
     SDL_GetMouseState(&lastMouseX, &lastMouseY);
 
-    return { 45.f, (float)width / height, 0.1f, 100000.f,
-        0.f, 0.f, // Init angles
-        basePos, baseFwd, baseUp // Init vectors
-    };
+    return { 45.f, (float)width / height, 0.1f, 100000.f, basePos, baseFwd, baseUp };
 }
 
 void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
@@ -56,17 +53,22 @@ void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
     }
 }
 
-void moveCamera(Camera &cam, CameraInputs inputs, float delta, float elapsed) {
+void moveCamera(Camera &cam, CameraInputs &inputs, float delta, float elapsed) {
     int currMouseX = 0;
     int currMouseY = 0;
     //TODO: Look into capturing mouse pointer in order to stop mouse from going out of bounds
     SDL_GetMouseState(&currMouseX, &currMouseY);
     int dx = currMouseX - lastMouseX;
     int dy = currMouseY - lastMouseY;
+
+    //TODO: Look into setting to invert mouse movements
+    inputs.theta += (dx * Camera::hsens);
+    if (inputs.theta > 359.f) inputs.theta -= 359;
+    if (inputs.theta < 0.f) inputs.theta += 359;
+    inputs.phi = min(max(inputs.phi - (dy * Camera::vsens), -89.f), 89.f);
+
     printf("Current mouse position : (%i, %i) [(%i, %i)]\n    theta: %f, phi: %f\n",
-           currMouseX, currMouseY, dx, dy, cam.theta, cam.phi);
-    // Store theta, phi for angles of rotation
-    // Modify these values based off of mouse motion deltas
+           currMouseX, currMouseY, dx, dy, inputs.theta, inputs.phi);
 
     lastMouseX = currMouseX;
     lastMouseY = currMouseY;
