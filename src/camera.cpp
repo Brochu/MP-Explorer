@@ -51,6 +51,13 @@ void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
             cam.fov = min(Camera::max_fov, cam.fov + Camera::fov_speed);
         }
     }
+
+    if (e->type == SDL_MOUSEMOTION) {
+        //TODO: Handle updating camera angles with this
+        int x = e->motion.xrel;
+        int y = e->motion.yrel;
+        printf("[CAM] relative mouse motion (%i, %i)\n", x, y);
+    }
 }
 
 void moveCamera(Camera &cam, CameraInputs &inputs, float delta, float elapsed) {
@@ -67,8 +74,8 @@ void moveCamera(Camera &cam, CameraInputs &inputs, float delta, float elapsed) {
     if (inputs.theta < 0.f) inputs.theta += 359;
     inputs.phi = min(max(inputs.phi - (dy * Camera::vsens), -89.f), 89.f);
 
-    printf("Current mouse position : (%i, %i) [(%i, %i)]\n    theta: %f, phi: %f\n",
-           currMouseX, currMouseY, dx, dy, inputs.theta, inputs.phi);
+    //printf("Current mouse position : (%i, %i) [(%i, %i)]\n    theta: %f, phi: %f\n",
+    //       currMouseX, currMouseY, dx, dy, inputs.theta, inputs.phi);
 
     lastMouseX = currMouseX;
     lastMouseY = currMouseY;

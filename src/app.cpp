@@ -107,6 +107,7 @@ void setup() {
     if (window == NULL) {
         printf("[ERR] Failed to create SDL2 window %s\n", SDL_GetError());
     }
+    SDL_SetRelativeMouseMode(SDL_TRUE);
 
     hwnd = GetActiveWindow();
     UI::initApp(window);
