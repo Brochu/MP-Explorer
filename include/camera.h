@@ -15,8 +15,8 @@ struct Camera {
     constexpr static float max_fov = 125.f;
     constexpr static float speed = 10.f;
     constexpr static float fov_speed = 2.f;
-    constexpr static float hsens = 1.0f;
-    constexpr static float vsens = 0.5f;
+    constexpr static float hsens = 10.0f;
+    constexpr static float vsens = 10.0f;
 };
 
 struct CameraInputs {
@@ -33,7 +33,7 @@ union SDL_Event;
 namespace App {
 
 Camera initCamera(float width, float height);
-void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam);
+void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam, float delta, float elapsed);
 void moveCamera(Camera &cam, CameraInputs &inputs, float delta, float elapsed);
 
 };

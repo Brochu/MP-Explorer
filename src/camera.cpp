@@ -2,7 +2,6 @@
 
 #include "SDL_events.h"
 #include "SDL_keycode.h"
-#include "SDL_mouse.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -11,15 +10,15 @@
 namespace App {
 using namespace DirectX;
 
-XMVECTOR basePos = { -5.f, -5.f, -5.f };
-XMVECTOR baseFwd = { 1.f, 1.f, 1.f };
+XMVECTOR basePos = { 0.f, 0.f, -5.f };
+XMVECTOR baseFwd = { 0.f, 0.f, 1.f };
 XMVECTOR baseUp = { 0.f, 1.f, 0.f };
 
 Camera initCamera(float width, float height) {
     return { 45.f, (float)width / height, 0.1f, 100000.f, basePos, baseFwd, baseUp };
 }
 
-void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
+void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam, float delta, float elapsed) {
     if (e->type == SDL_KEYDOWN) {
         if (e->key.keysym.sym == SDLK_w) inputs.fwd = true;
         if (e->key.keysym.sym == SDLK_s) inputs.bwd = true;
@@ -52,13 +51,10 @@ void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam) {
         int dx = e->motion.xrel;
         int dy = e->motion.yrel;
 
-        inputs.theta += (dx * Camera::hsens);
+        inputs.theta += (dx * Camera::hsens * delta);
         if (inputs.theta > 359.f) inputs.theta -= 359;
         if (inputs.theta < 0.f) inputs.theta += 359;
-        inputs.phi = min(max(inputs.phi - (dy * Camera::vsens), -89.f), 89.f);
-
-        printf("[CAM] relative mouse motion (%i, %i)\n", dx, dy);
-        printf("rotation : theta: %f, phi: %f\n", inputs.theta, inputs.phi);
+        inputs.phi = min(max(inputs.phi + (dy * Camera::vsens * delta), -89.f), 89.f);
     }
 }
 
@@ -66,7 +62,11 @@ void moveCamera(Camera &cam, CameraInputs &inputs, float delta, float elapsed) {
     //TODO: Rotate camera forward vector
     // Rotate the base forward vector with these angles
     // Use rotated forward vector for cam movement
-    //const XMVECTOR quat = XMQuaternionRotationRollPitchYaw(inputs.phi, inputs.theta, 0.f);
+    const XMVECTOR quat = XMQuaternionRotationRollPitchYaw(
+        XMConvertToRadians(inputs.phi),
+        XMConvertToRadians(inputs.theta),
+        0.f);
+    cam.forward = XMVector3Rotate(baseFwd, quat); 
 
     // Move camera position
     if (inputs.fwd) {

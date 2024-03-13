@@ -135,7 +135,7 @@ bool update(float delta, float elapsed) {
         if (e.type == SDL_QUIT || (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)) {
             return false;
         }
-        updateCamera(&e, camIn, cam);
+        updateCamera(&e, camIn, cam, delta, elapsed);
     }
 
     moveCamera(cam, camIn, delta, elapsed);
