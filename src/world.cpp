@@ -79,7 +79,7 @@ void loadRoom(World &world, int roomIndex) {
     //TODO: Need to check if we can read shaders from .blend files
 
     std::vector<aiNode*> stack;
-    for(int i = 0; i < scene->mRootNode->mNumChildren; i++) {
+    for(unsigned int i = 0; i < scene->mRootNode->mNumChildren; i++) {
         if (strcmp(scene->mRootNode->mChildren[i]->mName.C_Str(), "Render") == 0) {
             stack.push_back(scene->mRootNode->mChildren[i]);
             break;
@@ -93,7 +93,7 @@ void loadRoom(World &world, int roomIndex) {
                n->mName.C_Str(), n->mNumChildren, n->mNumMeshes);
         //TODO: Extract all vertices/indices
         // Don't forget to add offset to indices since we're grouping meshes?
-        for(int i = 0; i < n->mNumChildren; i++) {
+        for(unsigned int i = 0; i < n->mNumChildren; i++) {
             stack.insert(stack.begin(), n->mChildren[i]);
         }
     }
