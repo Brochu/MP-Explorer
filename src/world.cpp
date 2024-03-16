@@ -56,6 +56,7 @@ void loadRoom(World &world, int roomIndex) {
     directory_entry model;
     for (directory_entry entry : directory_iterator(path.c_str())) {
         std::wstring name = entry.path().filename().c_str();
+        //TODO: Maybe test if loading from format != .blend would give better speed?
         if (name.find(L"area") != std::wstring::npos) {
             model = entry;
             break;
@@ -67,7 +68,7 @@ void loadRoom(World &world, int roomIndex) {
     Assimp::Importer imp;
     const aiScene *scene = imp.ReadFile(
         path.c_str(),
-        aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Quality
+        aiProcessPreset_TargetRealtime_Fast | aiProcess_ConvertToLeftHanded
     );
 
     if (scene != nullptr) {
