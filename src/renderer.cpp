@@ -219,6 +219,7 @@ void Teardown() {
 
 int CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers) {
     D3D12_ROOT_PARAMETER rootparams[32]; //TODO: Look into this as a max value
+
     for (int i = 0; i < params.size(); i++) {
         CD3DX12_ROOT_PARAMETER p;
         if (params[i].descriptorType == RootSigParam::SRVDescriptor) {
@@ -233,8 +234,15 @@ int CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample>
         rootparams[i] = p;
     }
 
+    //TODO: Use this table to store vertex data instead of using HW vertex fetching?
+    CD3DX12_ROOT_PARAMETER table;
+    CD3DX12_DESCRIPTOR_RANGE range;
+    range.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+    table.InitAsDescriptorTable(1, &range, D3D12_SHADER_VISIBILITY_VERTEX);
+    rootparams[1] = table;
+
     CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
-    rootdesc.Init((UINT)params.size(), rootparams, 0, nullptr,
+    rootdesc.Init((UINT)params.size()+1, rootparams, 0, nullptr,
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> sign;
