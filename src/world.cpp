@@ -1,12 +1,15 @@
 #include "world.h"
 
 #include "assimp/Importer.hpp"
+#include "assimp/mesh.h"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 #include <stdio.h>
 
 namespace Config {
 using namespace std::filesystem;
+
+typedef unsigned int uint;
 
 const char *levelFolders[WORLD_NUM] {
     "Metroid1\\!1IntroWorld0310a_158EFE17",
@@ -79,7 +82,7 @@ void loadRoom(World &world, int roomIndex) {
     //TODO: Need to check if we can read shaders from .blend files
 
     std::vector<aiNode*> stack;
-    for(unsigned int i = 0; i < scene->mRootNode->mNumChildren; i++) {
+    for(uint i = 0; i < scene->mRootNode->mNumChildren; i++) {
         if (strcmp(scene->mRootNode->mChildren[i]->mName.C_Str(), "Render") == 0) {
             stack.push_back(scene->mRootNode->mChildren[i]);
             break;
@@ -91,9 +94,16 @@ void loadRoom(World &world, int roomIndex) {
         stack.pop_back();
         printf("[WORLD] Visiting node -> %s (%i children, %i meshes)\n",
                n->mName.C_Str(), n->mNumChildren, n->mNumMeshes);
-        //TODO: Extract all vertices/indices
-        // Don't forget to add offset to indices since we're grouping meshes?
-        for(unsigned int i = 0; i < n->mNumChildren; i++) {
+        for (uint i = 0; i < n->mNumMeshes; i++) {
+            //TODO: Extract all vertices/indices
+            aiMesh *m = scene->mMeshes[n->mMeshes[i]];
+
+            for (uint j = 0; j < m->mNumFaces; j++) {
+                aiFace face = m->mFaces[j];
+            }
+        }
+
+        for(uint i = 0; i < n->mNumChildren; i++) {
             stack.insert(stack.begin(), n->mChildren[i]);
         }
     }

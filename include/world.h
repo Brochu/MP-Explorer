@@ -12,11 +12,14 @@ struct Geometry {
     DirectX::XMFLOAT3 norm;
 };
 
-struct Room {
-    std::filesystem::path path;
-
+struct Mesh {
     std::vector<Geometry> vertices;
     std::vector<unsigned int> indices;
+};
+
+struct Room {
+    std::filesystem::path path;
+    std::vector<Mesh> meshes;
 };
 
 struct World {
