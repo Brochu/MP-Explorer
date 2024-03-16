@@ -15,17 +15,13 @@ struct Geometry {
 struct Room {
     std::filesystem::path path;
 
-    int voffset;
-    unsigned int vcount;
-    int ioffset;
-    unsigned int icount;
+    std::vector<Geometry> vertices;
+    std::vector<unsigned int> indices;
 };
 
 struct World {
     std::vector<Room> levels[WORLD_NUM];
     int levelIndex = 1;
-    std::vector<Geometry> vertices;
-    std::vector<unsigned int> indices;
 };
 
 namespace Config {

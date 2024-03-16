@@ -1,7 +1,6 @@
 #include "world.h"
 
 #include "assimp/Importer.hpp"
-#include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 #include <stdio.h>
@@ -47,13 +46,11 @@ void loadRoom(World &world, int roomIndex) {
     // Open and read !area file
     // We need to store all objs (verts + idx)
     // Look through default folder only to start
+    Room r = world.levels[world.levelIndex][roomIndex];
+
     std::string path;
     path.resize(255); //TODO: Maybe change this max value later
-    sprintf_s(path.data(), 255, "%s\\%s\\%ls",
-        PATH,
-        levelFolders[world.levelIndex],
-        world.levels[world.levelIndex][roomIndex].path.c_str()
-    );
+    sprintf_s(path.data(), 255, "%s\\%s\\%ls", PATH, levelFolders[world.levelIndex], r.path.c_str());
     printf("[WORLD] Room='%s'\n", path.c_str());
 
     directory_entry model;
@@ -79,6 +76,26 @@ void loadRoom(World &world, int roomIndex) {
         printf("[WORLD] Could not load file -> %s\n", imp.GetErrorString());
     }
     //TODO: Need to check if we can read shaders from .blend files
+
+    std::vector<aiNode*> stack;
+    for(int i = 0; i < scene->mRootNode->mNumChildren; i++) {
+        if (strcmp(scene->mRootNode->mChildren[i]->mName.C_Str(), "Render") == 0) {
+            stack.push_back(scene->mRootNode->mChildren[i]);
+            break;
+        }
+    }
+
+    while(!stack.empty()) {
+        aiNode *n = stack.back();
+        stack.pop_back();
+        printf("[WORLD] Visiting node -> %s (%i children, %i meshes)\n",
+               n->mName.C_Str(), n->mNumChildren, n->mNumMeshes);
+        //TODO: Extract all vertices/indices
+        // Don't forget to add offset to indices since we're grouping meshes?
+        for(int i = 0; i < n->mNumChildren; i++) {
+            stack.insert(stack.begin(), n->mChildren[i]);
+        }
+    }
 }
 
 }
