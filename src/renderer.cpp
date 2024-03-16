@@ -18,6 +18,7 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 
 UINT rtvDescSize;
+UINT resDescSize;
 
 // Dx12 objects
 ComPtr<ID3D12Device> device;
@@ -26,6 +27,7 @@ ComPtr<ID3D12CommandAllocator> cmdAllocs[FRAME_COUNT];
 ComPtr<ID3D12GraphicsCommandList> cmdLists[FRAME_COUNT];
 ComPtr<IDXGISwapChain4> swapchain;
 ComPtr<ID3D12DescriptorHeap> rtvheap;
+ComPtr<ID3D12DescriptorHeap> resheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 
@@ -63,6 +65,7 @@ void Setup(HWND hwnd, int width, int height) {
     printf("[RENDERER] Preparing renderer.\n");
     frameIndex = 0;
     rtvDescSize = 0;
+    resDescSize = 0;
 
     for (int i = 0; i < FRAME_COUNT; i++) {
         fenceValues[i] = 0;
@@ -115,6 +118,13 @@ void Setup(HWND hwnd, int width, int height) {
         rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvheap)));
         rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+        D3D12_DESCRIPTOR_HEAP_DESC resHeapDesc {};
+        resHeapDesc.NumDescriptors = 1;
+        resHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        resHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        ThrowIfFailed(device->CreateDescriptorHeap(&resHeapDesc, IID_PPV_ARGS(&resheap)));
+        resDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
         D3D12_DESCRIPTOR_HEAP_DESC imguiHeapDesc {};
         imguiHeapDesc.NumDescriptors = 1;
@@ -353,6 +363,7 @@ Draws UploadDrawData(std::span<UploadData> uploadData) {
     memcpy(pvBuffer, verts, vBufferSize);
     vBuffer->Unmap(0, nullptr);
 
+    //TODO: Create a ShaderResourceView in the resheap to feed to the descriptor table
     vBufferView.BufferLocation = vBuffer->GetGPUVirtualAddress();
     vBufferView.SizeInBytes = vBufferSize;
     vBufferView.StrideInBytes = sizeof(Vertex);
