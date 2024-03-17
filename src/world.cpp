@@ -32,7 +32,6 @@ World initWorld() {
             levelFolders[i]
         );
 
-        printf("[WORLD] Loading rooms from %s\n", path.c_str());
         for (directory_entry entry : directory_iterator(path.c_str())) {
             if (entry.is_directory()) {
                 w.levels[i].push_back({ entry.path().filename() });
@@ -54,7 +53,6 @@ void loadRoom(World &world, int roomIndex) {
     std::string path;
     path.resize(255); //TODO: Maybe change this max value later
     sprintf_s(path.data(), 255, "%s\\%s\\%ls", PATH, levelFolders[world.levelIndex], r.path.c_str());
-    printf("[WORLD] Room='%s'\n", path.c_str());
 
     directory_entry model;
     for (directory_entry entry : directory_iterator(path.c_str())) {
@@ -67,18 +65,11 @@ void loadRoom(World &world, int roomIndex) {
     }
 
     sprintf_s(path.data(), 255, "%ls", model.path().c_str());
-    printf("[WORLD] Model='%s'\n", path.c_str());
     Assimp::Importer imp;
     const aiScene *scene = imp.ReadFile(
         path.c_str(),
         aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded
     );
-
-    if (scene != nullptr) {
-        printf("[WORLD] Model # of meshes = %i\n", scene->mNumMeshes);
-    } else {
-        printf("[WORLD] Could not load file -> %s\n", imp.GetErrorString());
-    }
     //TODO: Need to check if we can read shaders from .blend files
 
     std::vector<aiNode*> stack;
@@ -92,8 +83,6 @@ void loadRoom(World &world, int roomIndex) {
     while(!stack.empty()) {
         aiNode *n = stack.back();
         stack.pop_back();
-        printf("[WORLD] Visiting node -> %s (%i children, %i meshes)\n",
-               n->mName.C_Str(), n->mNumChildren, n->mNumMeshes);
         for (uint i = 0; i < n->mNumMeshes; i++) {
             //TODO: Extract all vertices/indices
             aiMesh *m = scene->mMeshes[n->mMeshes[i]];
@@ -119,9 +108,6 @@ void loadRoom(World &world, int roomIndex) {
                     r.meshes[midx].indices.push_back(face.mIndices[k]);
                 }
             }
-
-            printf("[WORLD] Extracted mesh -> %s (vertices size %lld, indices size %lld)\n",
-                   m->mName.C_Str(), r.meshes[midx].vertices.size(), r.meshes[midx].indices.size());
         }
 
         for(uint i = 0; i < n->mNumChildren; i++) {
