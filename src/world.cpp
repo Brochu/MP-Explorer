@@ -48,7 +48,7 @@ void loadRoom(World &world, int roomIndex) {
     // Open and read !area file
     // We need to store all objs (verts + idx)
     // Look through default folder only to start
-    Room r = world.levels[world.levelIndex][roomIndex];
+    Room &r = world.levels[world.levelIndex][roomIndex];
 
     std::string path;
     path.resize(255); //TODO: Maybe change this max value later
