@@ -71,7 +71,7 @@ void loadRoom(World &world, int roomIndex) {
     Assimp::Importer imp;
     const aiScene *scene = imp.ReadFile(
         path.c_str(),
-        aiProcessPreset_TargetRealtime_Fast | aiProcess_ConvertToLeftHanded
+        aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded
     );
 
     if (scene != nullptr) {
@@ -97,10 +97,31 @@ void loadRoom(World &world, int roomIndex) {
         for (uint i = 0; i < n->mNumMeshes; i++) {
             //TODO: Extract all vertices/indices
             aiMesh *m = scene->mMeshes[n->mMeshes[i]];
+            size_t midx = r.meshes.size();
+            r.meshes.emplace_back();
+
+            for (uint j = 0; j < m->mNumVertices; j++) {
+                size_t vidx = r.meshes[midx].vertices.size();
+                aiVector3D vpos = m->mVertices[j];
+                aiVector3D norm = m->mNormals[j];
+                aiVector3D uvs = m->mTextureCoords[0][j];
+
+                r.meshes[midx].vertices.emplace_back();
+                r.meshes[midx].vertices[vidx].pos = { vpos.x, vpos.y, vpos.z };
+                r.meshes[midx].vertices[vidx].norm = { norm.x, norm.y, norm.z };
+                r.meshes[midx].vertices[vidx].uvs = { uvs.x, uvs.y };
+            }
 
             for (uint j = 0; j < m->mNumFaces; j++) {
                 aiFace face = m->mFaces[j];
+
+                for (uint k = 0; k < face.mNumIndices; k++) {
+                    r.meshes[midx].indices.push_back(face.mIndices[k]);
+                }
             }
+
+            printf("[WORLD] Extracted mesh -> %s (vertices size %lld, indices size %lld)\n",
+                   m->mName.C_Str(), r.meshes[midx].vertices.size(), r.meshes[midx].indices.size());
         }
 
         for(uint i = 0; i < n->mNumChildren; i++) {
