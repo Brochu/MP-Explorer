@@ -2,6 +2,13 @@ cbuffer PerFrame : register(b0) {
     float4x4 mvp;
 };
 
+struct Vertex {
+    float3 position;
+    float2 uv;
+    float3 normal;
+};
+StructuredBuffer<Vertex> vertices : register (t0);
+
 struct PSInput {
     float4 pos : SV_POSITION;
     float4 color : COLOR;
