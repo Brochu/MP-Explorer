@@ -5,7 +5,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <stdio.h>
 
 namespace App {
 using namespace DirectX;
@@ -13,9 +12,19 @@ using namespace DirectX;
 XMVECTOR basePos = { 0.f, 0.f, -5.f };
 XMVECTOR baseFwd = { 0.f, 0.f, 1.f };
 XMVECTOR baseUp = { 0.f, 1.f, 0.f };
+XMMATRIX mvp = XMMatrixIdentity();
 
 Camera initCamera(float width, float height) {
     return { 45.f, (float)width / height, 0.1f, 100000.f, basePos, baseFwd, baseUp };
+}
+
+DirectX::XMMATRIX &getCameraMVP(Camera &cam) {
+    XMMATRIX model = XMMatrixIdentity();
+    XMMATRIX view = XMMatrixLookToLH(cam.pos, cam.forward, cam.up);
+    XMMATRIX persp = XMMatrixPerspectiveFovLH(XMConvertToRadians(cam.fov), cam.ratio, cam.nearp, cam.farp);
+    mvp = model * view * persp;
+
+    return mvp;
 }
 
 void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam, float delta, float elapsed) {

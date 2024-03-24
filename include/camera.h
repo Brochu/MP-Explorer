@@ -33,6 +33,8 @@ union SDL_Event;
 namespace App {
 
 Camera initCamera(float width, float height);
+DirectX::XMMATRIX &getCameraMVP(Camera &cam);
+
 void updateCamera(SDL_Event *e, CameraInputs &inputs, Camera &cam, float delta, float elapsed);
 void moveCamera(Camera &cam, CameraInputs &inputs, float delta, float elapsed);
 
