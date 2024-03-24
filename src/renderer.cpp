@@ -30,7 +30,7 @@ ComPtr<IDXGISwapChain4> swapchain;
 ComPtr<ID3D12DescriptorHeap> rtvheap;
 ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 ComPtr<ID3D12DescriptorHeap> dsvheap;
-ComPtr<ID3D12Resource> dsvs[FRAME_COUNT];
+ComPtr<ID3D12Resource> dsv;
 
 ComPtr<ID3D12DescriptorHeap> resheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
@@ -132,9 +132,9 @@ void Setup(HWND hwnd, int width, int height) {
         rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
         D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc {};
-        rtvHeapDesc.NumDescriptors = FRAME_COUNT;
-        rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-        rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        dsvHeapDesc.NumDescriptors = 1;
+        dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvheap)));
         dsvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
@@ -154,15 +154,25 @@ void Setup(HWND hwnd, int width, int height) {
     //-------------------------
     { // Frame Resources
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtvhandle(rtvheap->GetCPUDescriptorHandleForHeapStart());
-        CD3DX12_CPU_DESCRIPTOR_HANDLE dsvhandle(dsvheap->GetCPUDescriptorHandleForHeapStart());
 
         for (UINT i = 0; i < FRAME_COUNT; i++) {
             ThrowIfFailed(swapchain->GetBuffer(i, IID_PPV_ARGS(&rtvs[i])));
             device->CreateRenderTargetView(rtvs[i].Get(), nullptr, rtvhandle);
             rtvhandle.Offset(1, rtvDescSize);
-
-            //TODO: Create depth stencil resource, and place view descriptor in heap
         }
+
+        D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        D3D12_RESOURCE_DESC depthDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+            DXGI_FORMAT_D32_FLOAT, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+        D3D12_CLEAR_VALUE depthClear { DXGI_FORMAT_D32_FLOAT, { {1.f, 0} } };
+
+        ThrowIfFailed(device->CreateCommittedResource(
+            &prop, D3D12_HEAP_FLAG_NONE, &depthDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE,
+            &depthClear, IID_PPV_ARGS(&dsv)
+        ));
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE dsvhandle(dsvheap->GetCPUDescriptorHandleForHeapStart());
+        device->CreateDepthStencilView(dsv.Get(), nullptr, dsvhandle);
     }
     //-------------------------
     { // Sync Objects
