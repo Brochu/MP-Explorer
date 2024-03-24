@@ -18,30 +18,27 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 
 UINT rtvDescSize;
+UINT dsvDescSize;
 UINT resDescSize;
 
-// Dx12 objects
 ComPtr<ID3D12Device> device;
 ComPtr<ID3D12CommandQueue> queue;
 ComPtr<ID3D12CommandAllocator> cmdAllocs[FRAME_COUNT];
 ComPtr<ID3D12GraphicsCommandList> cmdLists[FRAME_COUNT];
 ComPtr<IDXGISwapChain4> swapchain;
+
 ComPtr<ID3D12DescriptorHeap> rtvheap;
+ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
+ComPtr<ID3D12DescriptorHeap> dsvheap;
+ComPtr<ID3D12Resource> dsvs[FRAME_COUNT];
+
 ComPtr<ID3D12DescriptorHeap> resheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
-ComPtr<ID3D12Resource> rtvs[FRAME_COUNT];
 
-ComPtr<ID3D12Resource> vBuffer;
-D3D12_VERTEX_BUFFER_VIEW vBufferView;
 ComPtr<ID3D12Resource> iBuffer;
 D3D12_INDEX_BUFFER_VIEW iBufferView;
 
-struct Pipelines {
-    std::vector<ComPtr<ID3D12RootSignature>> rootSigs;
-    std::vector<ComPtr<ID3D12PipelineState>> PSOs;
-} pipelines;
-
-std::vector<ComPtr<ID3D12Resource>> bufferedCBs;
+ComPtr<ID3D12RootSignature> rootSigs;
 
 // Shader Compiler objects
 ComPtr<IDxcCompiler3> compiler;
@@ -63,13 +60,12 @@ HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR targ
 
 void Setup(HWND hwnd, int width, int height) {
     printf("[RENDERER] Preparing renderer.\n");
-    frameIndex = 0;
     rtvDescSize = 0;
+    dsvDescSize= 0;
     resDescSize = 0;
+    frameIndex = 0;
+    memset(fenceValues, 0, FRAME_COUNT * sizeof(UINT64));
 
-    for (int i = 0; i < FRAME_COUNT; i++) {
-        fenceValues[i] = 0;
-    }
     //-------------------------
     UINT factoryflags = 0;
     ComPtr<ID3D12Debug> debugCtrl;
@@ -88,6 +84,22 @@ void Setup(HWND hwnd, int width, int height) {
     qdesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     qdesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     ThrowIfFailed(device->CreateCommandQueue(&qdesc, IID_PPV_ARGS(&queue)));
+
+    for (UINT i = 0; i < FRAME_COUNT; i++) {
+        ThrowIfFailed(device->CreateCommandAllocator(
+            D3D12_COMMAND_LIST_TYPE_DIRECT,
+            IID_PPV_ARGS(&cmdAllocs[i])
+        ));
+
+        ThrowIfFailed(device->CreateCommandList(
+            0,
+            D3D12_COMMAND_LIST_TYPE_DIRECT,
+            cmdAllocs[i].Get(),
+            nullptr,
+            IID_PPV_ARGS(&cmdLists[i])
+        ));
+        ThrowIfFailed(cmdLists[i]->Close());
+    }
     //-------------------------
     DXGI_SWAP_CHAIN_DESC1 swapdesc {};
     swapdesc.BufferCount = FRAME_COUNT;
@@ -119,10 +131,17 @@ void Setup(HWND hwnd, int width, int height) {
         ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvheap)));
         rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+        D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc {};
+        rtvHeapDesc.NumDescriptors = FRAME_COUNT;
+        rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvheap)));
+        dsvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
         D3D12_DESCRIPTOR_HEAP_DESC resHeapDesc {};
         resHeapDesc.NumDescriptors = 1;
         resHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        resHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        resHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         ThrowIfFailed(device->CreateDescriptorHeap(&resHeapDesc, IID_PPV_ARGS(&resheap)));
         resDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -135,25 +154,14 @@ void Setup(HWND hwnd, int width, int height) {
     //-------------------------
     { // Frame Resources
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtvhandle(rtvheap->GetCPUDescriptorHandleForHeapStart());
+        CD3DX12_CPU_DESCRIPTOR_HANDLE dsvhandle(dsvheap->GetCPUDescriptorHandleForHeapStart());
 
         for (UINT i = 0; i < FRAME_COUNT; i++) {
             ThrowIfFailed(swapchain->GetBuffer(i, IID_PPV_ARGS(&rtvs[i])));
             device->CreateRenderTargetView(rtvs[i].Get(), nullptr, rtvhandle);
             rtvhandle.Offset(1, rtvDescSize);
 
-            ThrowIfFailed(device->CreateCommandAllocator(
-                D3D12_COMMAND_LIST_TYPE_DIRECT,
-                IID_PPV_ARGS(&cmdAllocs[i])
-            ));
-
-            ThrowIfFailed(device->CreateCommandList(
-                0,
-                D3D12_COMMAND_LIST_TYPE_DIRECT,
-                cmdAllocs[i].Get(),
-                nullptr,
-                IID_PPV_ARGS(&cmdLists[i])
-            ));
-            ThrowIfFailed(cmdLists[i]->Close());
+            //TODO: Create depth stencil resource, and place view descriptor in heap
         }
     }
     //-------------------------
@@ -173,50 +181,6 @@ void Setup(HWND hwnd, int width, int height) {
     }
     ctx = TracyD3D12Context(device.Get(), queue.Get());
     UI::initRender(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM, imguiheap.Get());
-}
-
-void StartFrame(UINT originX, UINT originY, UINT width, UINT height, int rootSigIndex, int psoIndex) {
-    ThrowIfFailed(cmdAllocs[frameIndex]->Reset());
-    ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-    ThrowIfFailed(cmdlist->Reset(cmdAllocs[frameIndex].Get(), pipelines.PSOs[psoIndex].Get()));
-
-    D3D12_RESOURCE_BARRIER targetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
-        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET
-    );
-    cmdlist->ResourceBarrier(1, &targetBarrier);
-
-    //TODO: Do we have to split this into separate function
-    D3D12_VIEWPORT vp {(float)originX, (float)originY, (float)width, (float)height};
-    cmdlist->RSSetViewports(1, &vp);
-    D3D12_RECT scissors {(LONG)originX, (LONG)originY, (LONG)width, (LONG)height};
-    cmdlist->RSSetScissorRects(1, &scissors);
-
-    //TODO: Handle giving a custom render target? Or split into function
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvheap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescSize);
-    cmdlist->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
-    const float clear[] { 0.f, 0.2f, 0.4f, 1.f };
-    cmdlist->ClearRenderTargetView(rtvHandle, clear, 0, nullptr);
-
-    cmdlist->SetGraphicsRootSignature(pipelines.rootSigs[rootSigIndex].Get());
-}
-
-void EndFrame() {
-    //TODO: Is this logic at the right spot?
-    ID3D12DescriptorHeap *heaps { imguiheap.Get() };
-    cmdLists[frameIndex]->SetDescriptorHeaps(1, &heaps);
-    UI::endFrame(cmdLists[frameIndex].Get());
-
-    D3D12_RESOURCE_BARRIER presentBarrier = CD3DX12_RESOURCE_BARRIER::Transition(rtvs[frameIndex].Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT
-    );
-    cmdLists[frameIndex]->ResourceBarrier(1, &presentBarrier);
-
-    ThrowIfFailed(cmdLists[frameIndex]->Close());
-    ID3D12CommandList *ppCmdList[] { cmdLists[frameIndex].Get() };
-    queue->ExecuteCommandLists(_countof(ppCmdList), ppCmdList);
-
-    ThrowIfFailed(swapchain->Present(1, 0));
-    MoveToNextFrame();
 }
 
 void Teardown() {
@@ -266,149 +230,7 @@ int CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample>
         IID_PPV_ARGS(&root)
     ));
 
-    int index = (int)pipelines.rootSigs.size();
-    pipelines.rootSigs.push_back(root);
-    return index;
-}
-
-int CreatePSO(LPCWSTR shaderFile, LPCWSTR vertEntry, LPCWSTR pixEntry) {
-    ComPtr<IDxcBlobEncoding> src{};
-    ThrowIfFailed(utils->LoadFile(shaderFile, nullptr, &src));
-    ComPtr<IDxcBlob> vs, ps;
-    CompileShader(src, vertEntry, L"vs_6_5", vs);
-    CompileShader(src, pixEntry, L"ps_6_5", ps);
-
-    D3D12_INPUT_ELEMENT_DESC inputElem[] = {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    };
-
-    ComPtr<ID3D12PipelineState> pso;
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC psodesc = { 0 };
-    psodesc.InputLayout = { inputElem, _countof(inputElem) };
-    psodesc.pRootSignature = pipelines.rootSigs[0].Get();
-    psodesc.VS = { .pShaderBytecode = vs->GetBufferPointer(), .BytecodeLength = vs->GetBufferSize() };
-    psodesc.PS = { .pShaderBytecode = ps->GetBufferPointer(), .BytecodeLength = ps->GetBufferSize() };
-    psodesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-    psodesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-    psodesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-    psodesc.DepthStencilState.DepthEnable = FALSE;
-    psodesc.DepthStencilState.StencilEnable = FALSE;
-    psodesc.SampleMask = UINT_MAX;
-    psodesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    psodesc.NumRenderTargets = 1;
-    psodesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-    psodesc.SampleDesc.Count = 1;
-    ThrowIfFailed(device->CreateGraphicsPipelineState(&psodesc, IID_PPV_ARGS(&pso)));
-
-    int index = (int)pipelines.PSOs.size();
-    pipelines.PSOs.push_back(pso);
-    return index;
-}
-
-int CreateBufferedCB(size_t bufferSize) {
-    D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-    D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
-
-    int index = (int)bufferedCBs.size();
-    for (UINT i = 0; i < FRAME_COUNT; i++) {
-        ComPtr<ID3D12Resource> buffer;
-        ThrowIfFailed(device->CreateCommittedResource(
-            &prop, D3D12_HEAP_FLAG_NONE ,
-            &desc, D3D12_RESOURCE_STATE_GENERIC_READ, //Needs to stay generic_read because upload heap
-            nullptr, IID_PPV_ARGS(&buffer)
-        ));
-        //TODO: Maybe try to create placed resources from a given heap
-
-        bufferedCBs.push_back(buffer);
-    }
-    return index;
-}
-
-Draws UploadDrawData(std::span<UploadData> uploadData) {
-    //TODO: Look into changing this call to only receive a blob of data
-    Draws draws;
-    draws.idxCount.resize(uploadData.size());
-    draws.idxStart.resize(uploadData.size());
-    draws.vertStart.resize(uploadData.size());
-
-    UINT inum = 0;
-    UINT vnum = 0;
-    UINT idx[8096];
-    Vertex verts[8096];
-    for (int i = 0; i < uploadData.size(); i++) {
-        draws.idxCount[i] = (UINT)uploadData[i].indices.size();
-        draws.idxStart[i] = inum;
-        draws.vertStart[i] = vnum;
-
-        memcpy(&idx[inum], uploadData[i].indices.data(), sizeof(UINT) * draws.idxCount[i]);
-        memcpy(&verts[vnum], uploadData[i].verts.data(), sizeof(Vertex) * uploadData[i].verts.size());
-        inum += draws.idxCount[i];
-        vnum += (UINT)uploadData[i].verts.size();
-    }
-
-    const UINT vBufferSize = sizeof(Vertex) * (UINT)vnum;
-    D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-    D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(vBufferSize);
-    ThrowIfFailed(device->CreateCommittedResource(
-        &prop, D3D12_HEAP_FLAG_NONE,
-        &desc, D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr, IID_PPV_ARGS(&vBuffer)
-    ));
-    //TODO: Try to convert committed resources into placed resources for vertex buffers
-
-    UINT8 *pvBuffer;
-    CD3DX12_RANGE readRange(0, 0);
-    ThrowIfFailed(vBuffer->Map(0, &readRange, (void**)&pvBuffer));
-    memcpy(pvBuffer, verts, vBufferSize);
-    vBuffer->Unmap(0, nullptr);
-
-    //TODO: Create a ShaderResourceView in the resheap to feed to the descriptor table
-    vBufferView.BufferLocation = vBuffer->GetGPUVirtualAddress();
-    vBufferView.SizeInBytes = vBufferSize;
-    vBufferView.StrideInBytes = sizeof(Vertex);
-
-    const UINT iBufferSize = sizeof(UINT) * (UINT)inum;
-    D3D12_RESOURCE_DESC idxDesc = CD3DX12_RESOURCE_DESC::Buffer(iBufferSize);
-    ThrowIfFailed(device->CreateCommittedResource(
-        &prop, D3D12_HEAP_FLAG_NONE,
-        &idxDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr, IID_PPV_ARGS(&iBuffer)
-    ));
-    //TODO: Try to convert committed resources into placed resources for vertex buffers
-
-    UINT8 *piBuffer;
-    ThrowIfFailed(iBuffer->Map(0, &readRange, (void**)&piBuffer));
-    memcpy(piBuffer, idx, iBufferSize);
-    iBuffer->Unmap(0, nullptr);
-
-    iBufferView.BufferLocation = iBuffer->GetGPUVirtualAddress();
-    iBufferView.SizeInBytes = iBufferSize;
-    iBufferView.Format = DXGI_FORMAT_R32_UINT;
-
-    WaitForGPU();
-    return draws;
-}
-
-void BindBufferedCB(int CBIndex, void *data, size_t length) {
-    ComPtr<ID3D12Resource> buffer = bufferedCBs[CBIndex + frameIndex];
-    CD3DX12_RANGE readRange(0, 0);
-    UINT8* bufferStart = nullptr;
-    ThrowIfFailed(buffer->Map(0, &readRange, (void**)&bufferStart));
-    memcpy(bufferStart, data, length);
-    buffer->Unmap(0, nullptr);
-
-    ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-    cmdlist->SetGraphicsRootConstantBufferView(0, buffer->GetGPUVirtualAddress());
-}
-
-void RecordDraws(UINT idxCount, UINT idxStart, INT vertOffset) {
-    ID3D12GraphicsCommandList *cmdlist = cmdLists[frameIndex].Get();
-
-    cmdlist->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    cmdlist->IASetVertexBuffers(0, 1, &vBufferView);
-    cmdlist->IASetIndexBuffer(&iBufferView);
-    cmdlist->DrawIndexedInstanced(idxCount, 1, idxStart, vertOffset, 0);
+    return 0;
 }
 
 inline void ThrowIfFailed(HRESULT hr) {
