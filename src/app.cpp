@@ -54,7 +54,6 @@ UINT idx[] = {
     3, 2, 7, 7, 2, 6,
     4, 5, 0, 0, 5, 1,
 };
-Draws draws;
 
 Camera cam;
 CameraInputs camIn;
@@ -114,13 +113,6 @@ void setup() {
     Render::Setup(hwnd, WIDTH, HEIGHT);
     RootSigParam params[] { {RootSigParam::Type::CBVDescriptor, 0} };
     rootSigIndex = Render::CreateRootSignature(params, {});
-    PSOIndex = Render::CreatePSO(L"shaders\\shaders.hlsl", L"VSMain", L"PSMain");
-
-    printf("[APP] Loading debug model ...\n");
-    UploadData model[1] { {cube, idx} }; //TODO: Is there a better way to handle this? Try with real data?
-    draws = Render::UploadDrawData(model);
-    cam = initCamera(WIDTH, HEIGHT);
-    camCBIndex = Render::CreateBufferedCB(sizeof(CamMatrices));
 }
 
 bool update(float delta, float elapsed) {
@@ -135,26 +127,13 @@ bool update(float delta, float elapsed) {
         }
         updateCamera(&e, camIn, cam, delta, elapsed);
     }
-
     moveCamera(cam, camIn, delta, elapsed);
-    //TODO: Do we have to move this
-    XMMATRIX model = XMMatrixIdentity();
-    XMMATRIX view = XMMatrixLookToLH(cam.pos, cam.forward, cam.up);
-    XMMATRIX persp = XMMatrixPerspectiveFovLH(XMConvertToRadians(cam.fov), cam.ratio, cam.nearp, cam.farp);
-    camMat.mvp = model * view * persp;
 
     return true;
 }
 
 void render() {
     ZoneScoped;
-
-    //TODO: I have to review this process, interface is bad
-    Render::StartFrame(ssOriginX, ssOriginY, WIDTH, HEIGHT, rootSigIndex, PSOIndex);
-    Render::BindBufferedCB(camCBIndex, (void*)&camMat, sizeof(CamMatrices));
-    Render::RecordDraws(draws.idxCount[0], draws.idxStart[0], draws.vertStart[0]);
-    UI::drawUI(cam);
-    Render::EndFrame();
 }
 
 }

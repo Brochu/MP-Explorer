@@ -6,6 +6,11 @@
 
 #define WORLD_NUM 7
 
+struct Vertex {
+    DirectX::XMFLOAT3 pos;
+    DirectX::XMFLOAT2 uvs;
+};
+
 struct Geometry {
     DirectX::XMFLOAT3 pos;
     DirectX::XMFLOAT3 norm;
