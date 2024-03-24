@@ -95,18 +95,6 @@ int run() {
 void setup() {
     printf("[APP] Loading world config data ...\n");
     world = Config::initWorld();
-    //TODO: Testing, to remove later
-    Config::loadRoom(world, 7);
-    //for(int i = 0; i < WORLD_NUM; i++) {
-    //    printf(" - Level index = %i\n", i);
-
-    //    std::vector<Room> level = world.levels[i];
-    //    for (Room &r : level) {
-    //        printf("   - Room = %s (mesh count = %lld)\n", r.path.string().c_str(), r.meshes.size());
-    //    }
-    //    printf("\n");
-    //}
-    //printf("\n");
 
     printf("[APP] Setting up SDL2 ...\n");
     window = nullptr;

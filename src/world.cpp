@@ -42,6 +42,7 @@ World initWorld() {
     return w;
 }
 
+/*
 void loadRoom(World &world, int roomIndex) {
     //TODO: Load room data
     // How do we read YAML files
@@ -115,5 +116,6 @@ void loadRoom(World &world, int roomIndex) {
         }
     }
 }
+*/
 
 }
