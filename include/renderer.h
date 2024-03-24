@@ -25,6 +25,6 @@ namespace Render {
 void Setup(HWND hwnd, int width, int height);
 void Teardown();
 
-int CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers);
+void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers);
 
 }

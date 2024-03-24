@@ -12,6 +12,7 @@
 #include <wrl.h>
 
 #define FRAME_COUNT 2
+#define DESC_TABLE_SIZE 256
 
 namespace Render {
 using namespace Microsoft::WRL;
@@ -38,7 +39,7 @@ ComPtr<ID3D12DescriptorHeap> imguiheap;
 ComPtr<ID3D12Resource> iBuffer;
 D3D12_INDEX_BUFFER_VIEW iBufferView;
 
-ComPtr<ID3D12RootSignature> rootSigs;
+ComPtr<ID3D12RootSignature> rootSig;
 
 // Shader Compiler objects
 ComPtr<IDxcCompiler3> compiler;
@@ -201,46 +202,58 @@ void Teardown() {
     CloseHandle(fenceEvent);
 }
 
-int CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers) {
-    D3D12_ROOT_PARAMETER rootparams[32]; //TODO: Look into this as a max value
-
-    for (int i = 0; i < params.size(); i++) {
-        CD3DX12_ROOT_PARAMETER p;
-        if (params[i].descriptorType == RootSigParam::SRVDescriptor) {
-            p.InitAsShaderResourceView(params[i].descriptorIndex);
-        }
-        else if (params[i].descriptorType == RootSigParam::CBVDescriptor) {
-            p.InitAsConstantBufferView(params[i].descriptorIndex);
-        }
-        else if (params[i].descriptorType == RootSigParam::UAVDescriptor) {
-            p.InitAsUnorderedAccessView(params[i].descriptorIndex);
-        }
-        rootparams[i] = p;
+void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers) {
+    D3D12_STATIC_SAMPLER_DESC samplerDesc[32];
+    for (int i = 0; i < samplers.size(); i++) {
+        samplerDesc[i] = D3D12_STATIC_SAMPLER_DESC {};
+        //TODO: Fill in sampler data
     }
 
-    //TODO: Use this table to store vertex data instead of using HW vertex fetching?
-    CD3DX12_ROOT_PARAMETER table;
-    CD3DX12_DESCRIPTOR_RANGE range;
-    range.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
-    table.InitAsDescriptorTable(1, &range, D3D12_SHADER_VISIBILITY_VERTEX);
-    rootparams[1] = table;
+    D3D12_ROOT_PARAMETER1 paramDesc[32];
+    for (int i = 1; i <= params.size(); i++) {
+        CD3DX12_ROOT_PARAMETER1 p;
+        RootSigParam param = params[i - 1];
 
-    CD3DX12_ROOT_SIGNATURE_DESC rootdesc {};
-    rootdesc.Init((UINT)params.size()+1, rootparams, 0, nullptr,
-        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+        if (param.descriptorType == RootSigParam::SRVDescriptor) {
+            p.InitAsShaderResourceView(param.descriptorIndex);
+        }
+        else if (param.descriptorType == RootSigParam::CBVDescriptor) {
+            p.InitAsConstantBufferView(param.descriptorIndex);
+        }
+        else if (param.descriptorType == RootSigParam::UAVDescriptor) {
+            p.InitAsUnorderedAccessView(param.descriptorIndex);
+        }
+        p.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; //TODO: This is most likely wrong
+        paramDesc[i] = p;
+    }
 
-    ComPtr<ID3DBlob> sign;
-    ComPtr<ID3DBlob> error;
-    ComPtr<ID3D12RootSignature> root;
-    ThrowIfFailed(D3D12SerializeRootSignature(&rootdesc, D3D_ROOT_SIGNATURE_VERSION_1, &sign, &error));
+    // Bindless table
+    D3D12_DESCRIPTOR_RANGE1 bufferRange[1];
+    bufferRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    bufferRange[0].NumDescriptors = DESC_TABLE_SIZE;
+    bufferRange[0].BaseShaderRegister = 0;
+    bufferRange[0].RegisterSpace = 0;
+    bufferRange[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+    bufferRange[0].OffsetInDescriptorsFromTableStart = 0;
+
+    paramDesc[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    paramDesc[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    paramDesc[0].DescriptorTable = { 1, bufferRange };
+
+    D3D12_VERSIONED_ROOT_SIGNATURE_DESC rootSigDesc {};
+    rootSigDesc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
+    rootSigDesc.Desc_1_1.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+    rootSigDesc.Desc_1_1.NumStaticSamplers = (UINT)samplers.size();
+    rootSigDesc.Desc_1_1.pStaticSamplers = samplerDesc;
+    rootSigDesc.Desc_1_1.NumParameters = (UINT)params.size() + 1;
+    rootSigDesc.Desc_1_1.pParameters = paramDesc;
+
+    ID3DBlob *sig;
+    ID3DBlob *err;
+    ThrowIfFailed(D3D12SerializeVersionedRootSignature(&rootSigDesc, &sig, &err));
     ThrowIfFailed(device->CreateRootSignature(
-        0,
-        sign->GetBufferPointer(),
-        sign->GetBufferSize(),
-        IID_PPV_ARGS(&root)
-    ));
-
-    return 0;
+        0, sig->GetBufferPointer(), sig->GetBufferSize(), IID_PPV_ARGS(&rootSig))
+    );
 }
 
 inline void ThrowIfFailed(HRESULT hr) {

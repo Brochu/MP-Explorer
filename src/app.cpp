@@ -32,7 +32,6 @@ SDL_Window *window;
 UINT ssOriginX = 0;
 UINT ssOriginY = 0;
 
-int rootSigIndex = 0;
 int PSOIndex = 0;
 int camCBIndex = 0;
 
@@ -112,7 +111,7 @@ void setup() {
     printf("[APP] Init renderer ...\n");
     Render::Setup(hwnd, WIDTH, HEIGHT);
     RootSigParam params[] { {RootSigParam::Type::CBVDescriptor, 0} };
-    rootSigIndex = Render::CreateRootSignature(params, {});
+    Render::CreateRootSignature(params, {});
 }
 
 bool update(float delta, float elapsed) {
