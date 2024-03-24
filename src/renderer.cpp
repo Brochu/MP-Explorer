@@ -256,6 +256,13 @@ void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample
     );
 }
 
+int CreatePSO() {
+    //TODO: Handle creating PSO
+    // Shader compilation
+    // Make sure to leave INPUT_LAYOUT empty. Going for bindless vertex buffer
+    return 0;
+}
+
 inline void ThrowIfFailed(HRESULT hr) {
     if (FAILED(hr)) {
         assert(false);
