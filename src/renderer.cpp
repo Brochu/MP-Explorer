@@ -13,6 +13,12 @@
 
 #define FRAME_COUNT 2
 #define DESC_TABLE_SIZE 256
+#define ThrowIfFailed(hr)   \
+do {                        \
+    if (FAILED(hr)) {       \
+        assert(false);      \
+    }                       \
+} while(0);                 \
 
 namespace Render {
 using namespace Microsoft::WRL;
@@ -57,7 +63,6 @@ UINT64 fenceValues[FRAME_COUNT];
 
 TracyD3D12Ctx ctx;
 
-inline void ThrowIfFailed(HRESULT hr);
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter);
 void WaitForGPU();
 void MoveToNextFrame();
@@ -271,12 +276,6 @@ size_t CreatePSO() {
     );
     printf("[RENDERER] Created new PSO at index = %zd, HRESULT = %li\n", PSOs.count, hr);
     return PSOs.count++;
-}
-
-inline void ThrowIfFailed(HRESULT hr) {
-    if (FAILED(hr)) {
-        assert(false);
-    }
 }
 
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter) {
