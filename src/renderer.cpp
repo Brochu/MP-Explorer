@@ -40,6 +40,10 @@ ComPtr<ID3D12Resource> iBuffer;
 D3D12_INDEX_BUFFER_VIEW iBufferView;
 
 ComPtr<ID3D12RootSignature> rootSig;
+struct PsoArray {
+    ComPtr<ID3D12PipelineState> objs[32];
+    size_t count;
+} PSOs;
 
 // Shader Compiler objects
 ComPtr<IDxcCompiler3> compiler;
@@ -256,11 +260,17 @@ void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample
     );
 }
 
-int CreatePSO() {
+size_t CreatePSO() {
     //TODO: Handle creating PSO
     // Shader compilation
     // Make sure to leave INPUT_LAYOUT empty. Going for bindless vertex buffer
-    return 0;
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc {};
+    HRESULT hr = device->CreateGraphicsPipelineState(
+        &psoDesc,
+        IID_PPV_ARGS(&PSOs.objs[PSOs.count])
+    );
+    printf("[RENDERER] Created new PSO at index = %zd, HRESULT = %li\n", PSOs.count, hr);
+    return PSOs.count++;
 }
 
 inline void ThrowIfFailed(HRESULT hr) {

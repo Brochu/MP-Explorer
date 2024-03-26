@@ -32,7 +32,7 @@ SDL_Window *window;
 UINT ssOriginX = 0;
 UINT ssOriginY = 0;
 
-int PSOIndex = 0;
+size_t PSOIndex = 0;
 int camCBIndex = 0;
 
 Vertex cube[] = {
@@ -112,6 +112,8 @@ void setup() {
     Render::Setup(hwnd, WIDTH, HEIGHT);
     RootSigParam params[] { {RootSigParam::Type::CBVDescriptor, 0} };
     Render::CreateRootSignature(params, {});
+    PSOIndex = Render::CreatePSO();
+    printf("[APP] Renderer ready! w/ PSOindex = %zd\n", PSOIndex);
 }
 
 bool update(float delta, float elapsed) {

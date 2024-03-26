@@ -26,6 +26,6 @@ void Setup(HWND hwnd, int width, int height);
 void Teardown();
 
 void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers);
-int CreatePSO();
+size_t CreatePSO();
 
 }
