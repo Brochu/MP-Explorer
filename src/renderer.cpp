@@ -268,8 +268,28 @@ void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample
 size_t CreatePSO() {
     //TODO: Handle creating PSO
     // Shader compilation
-    // Make sure to leave INPUT_LAYOUT empty. Going for bindless vertex buffer
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc {};
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc { 0 };
+    psoDesc.InputLayout = { 0 };
+    psoDesc.pRootSignature = rootSig.Get();
+    //psoDesc.VS = CD3DX12_SHADER_BYTECODE(nullptr);
+    //psoDesc.PS = CD3DX12_SHADER_BYTECODE(nullptr);
+    psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+    psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+    psoDesc.BlendState.RenderTarget[0].BlendEnable = true;
+    psoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+    psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+    psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+    psoDesc.SampleMask = UINT_MAX;
+    psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    psoDesc.NumRenderTargets = 1;
+    psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+    psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+    psoDesc.SampleDesc.Count = 1;
+    //TODO: See if I can send params from App to drive parameters here
+
     HRESULT hr = device->CreateGraphicsPipelineState(
         &psoDesc,
         IID_PPV_ARGS(&PSOs.objs[PSOs.count])
