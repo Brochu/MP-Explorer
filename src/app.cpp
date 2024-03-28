@@ -112,7 +112,7 @@ void setup() {
     Render::Setup(hwnd, WIDTH, HEIGHT);
     RootSigParam params[] { {RootSigParam::Type::CBVDescriptor, 0} };
     Render::CreateRootSignature(params, {});
-    PSOIndex = Render::CreatePSO();
+    PSOIndex = Render::CreatePSO(L"shaders/shaders.hlsl");
     printf("[APP] Renderer ready! w/ PSOindex = %zd\n", PSOIndex);
 }
 
