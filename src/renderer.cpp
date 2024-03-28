@@ -265,14 +265,20 @@ void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample
     );
 }
 
-size_t CreatePSO() {
-    //TODO: Handle creating PSO
-    // Shader compilation
+size_t CreatePSO(LPCWSTR path) {
+    ComPtr<IDxcBlobEncoding> file;
+    ThrowIfFailed(utils->LoadFile(path, 0, &file));
+
+    ComPtr<IDxcBlob> vs;
+    ComPtr<IDxcBlob> ps;
+    ThrowIfFailed(CompileShader(file, L"VSMain", L"vs_6_5", vs));
+    ThrowIfFailed(CompileShader(file, L"PSMain", L"ps_6_5", ps));
+
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc { 0 };
     psoDesc.InputLayout = { 0 };
     psoDesc.pRootSignature = rootSig.Get();
-    //psoDesc.VS = CD3DX12_SHADER_BYTECODE(nullptr);
-    //psoDesc.PS = CD3DX12_SHADER_BYTECODE(nullptr);
+    psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs->GetBufferPointer(), vs->GetBufferSize());
+    psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps->GetBufferPointer(), ps->GetBufferSize());
     psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
     psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
     psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
