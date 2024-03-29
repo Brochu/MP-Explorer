@@ -296,11 +296,10 @@ size_t CreatePSO(LPCWSTR path) {
     psoDesc.SampleDesc.Count = 1;
     //TODO: See if I can send params from App to drive parameters here
 
-    HRESULT hr = device->CreateGraphicsPipelineState(
+    ThrowIfFailed(device->CreateGraphicsPipelineState(
         &psoDesc,
         IID_PPV_ARGS(&PSOs.objs[PSOs.count])
-    );
-    printf("[RENDERER] Created new PSO at index = %zd, HRESULT = %li\n", PSOs.count, hr);
+    ));
     return PSOs.count++;
 }
 
