@@ -406,4 +406,9 @@ HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR targ
     return hr;
 }
 
+size_t UploadVertBuffer(void *data, size_t size, size_t stride) {
+    //TODO: Upload vertex buffer to be bound in main root signature table
+    return 0;
+}
+
 }
