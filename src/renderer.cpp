@@ -42,6 +42,7 @@ ComPtr<ID3D12Resource> dsv;
 ComPtr<ID3D12DescriptorHeap> resheap;
 ComPtr<ID3D12DescriptorHeap> imguiheap;
 
+ComPtr<ID3D12Resource> vBuffer[FRAME_COUNT];
 ComPtr<ID3D12Resource> iBuffer;
 D3D12_INDEX_BUFFER_VIEW iBufferView;
 
@@ -303,6 +304,16 @@ size_t CreatePSO(LPCWSTR path) {
     return PSOs.count++;
 }
 
+size_t UploadVertBuffer(void *data, size_t size, size_t stride) {
+    //TODO: Upload vertex buffer to be bound in main root signature table
+    return 0;
+}
+
+size_t UploadIndexBuffer(void *data, size_t size, size_t stride) {
+    //TODO: Upload index buffer to be bound to command buffer
+    return 0;
+}
+
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter) {
     *ppAdapter = nullptr;
     ComPtr<IDXGIAdapter1> adapter;
@@ -404,11 +415,6 @@ HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR targ
         out->GetResult(&shader);
     }
     return hr;
-}
-
-size_t UploadVertBuffer(void *data, size_t size, size_t stride) {
-    //TODO: Upload vertex buffer to be bound in main root signature table
-    return 0;
 }
 
 }

@@ -53,6 +53,8 @@ UINT idx[] = {
     3, 2, 7, 7, 2, 6,
     4, 5, 0, 0, 5, 1,
 };
+size_t vertBufIdx;
+size_t indexBufIdx;
 
 Camera cam;
 CameraInputs camIn;
@@ -113,6 +115,8 @@ void setup() {
     RootSigParam params[] { {RootSigParam::Type::CBVDescriptor, 0} };
     Render::CreateRootSignature(params, {});
     PSOIndex = Render::CreatePSO(L"shaders/shaders.hlsl");
+    vertBufIdx = Render::UploadVertBuffer(nullptr, 0l, 0l);
+    indexBufIdx = Render::UploadIndexBuffer(nullptr, 0l, 0l);
 }
 
 bool update(float delta, float elapsed) {

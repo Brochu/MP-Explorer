@@ -28,5 +28,6 @@ void Teardown();
 void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers);
 size_t CreatePSO(LPCWSTR path);
 size_t UploadVertBuffer(void *data, size_t size, size_t stride);
+size_t UploadIndexBuffer(void *data, size_t size, size_t stride);
 
 }
