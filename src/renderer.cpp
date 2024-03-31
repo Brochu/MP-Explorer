@@ -69,7 +69,7 @@ void WaitForGPU();
 void MoveToNextFrame();
 HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR target, ComPtr<IDxcBlob> &shader);
 
-void Setup(HWND hwnd, int width, int height) {
+void Init(HWND hwnd, int width, int height) {
     printf("[RENDERER] Preparing renderer.\n");
     rtvDescSize = 0;
     dsvDescSize= 0;
@@ -210,109 +210,6 @@ void Teardown() {
 
     TracyD3D12Destroy(ctx);
     CloseHandle(fenceEvent);
-}
-
-void CreateRootSignature(std::span<RootSigParam> params, std::span<RootSigSample> samplers) {
-    D3D12_STATIC_SAMPLER_DESC samplerDesc[32];
-    for (int i = 0; i < samplers.size(); i++) {
-        samplerDesc[i] = D3D12_STATIC_SAMPLER_DESC {};
-        //TODO: Fill in sampler data
-    }
-
-    D3D12_ROOT_PARAMETER1 paramDesc[32];
-    for (int i = 1; i <= params.size(); i++) {
-        CD3DX12_ROOT_PARAMETER1 p;
-        RootSigParam param = params[i - 1];
-
-        if (param.descriptorType == RootSigParam::SRVDescriptor) {
-            p.InitAsShaderResourceView(param.descriptorIndex);
-        }
-        else if (param.descriptorType == RootSigParam::CBVDescriptor) {
-            p.InitAsConstantBufferView(param.descriptorIndex);
-        }
-        else if (param.descriptorType == RootSigParam::UAVDescriptor) {
-            p.InitAsUnorderedAccessView(param.descriptorIndex);
-        }
-        p.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; //TODO: This is most likely wrong
-        paramDesc[i] = p;
-    }
-
-    // Bindless table
-    D3D12_DESCRIPTOR_RANGE1 bufferRange[1];
-    bufferRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    bufferRange[0].NumDescriptors = DESC_TABLE_SIZE;
-    bufferRange[0].BaseShaderRegister = 0;
-    bufferRange[0].RegisterSpace = 0;
-    bufferRange[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
-    bufferRange[0].OffsetInDescriptorsFromTableStart = 0;
-
-    paramDesc[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    paramDesc[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-    paramDesc[0].DescriptorTable = { 1, bufferRange };
-
-    D3D12_VERSIONED_ROOT_SIGNATURE_DESC rootSigDesc {};
-    rootSigDesc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    rootSigDesc.Desc_1_1.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
-    rootSigDesc.Desc_1_1.NumStaticSamplers = (UINT)samplers.size();
-    rootSigDesc.Desc_1_1.pStaticSamplers = samplerDesc;
-    rootSigDesc.Desc_1_1.NumParameters = (UINT)params.size() + 1;
-    rootSigDesc.Desc_1_1.pParameters = paramDesc;
-
-    ID3DBlob *sig;
-    ID3DBlob *err;
-    ThrowIfFailed(D3D12SerializeVersionedRootSignature(&rootSigDesc, &sig, &err));
-    ThrowIfFailed(device->CreateRootSignature(
-        0, sig->GetBufferPointer(), sig->GetBufferSize(), IID_PPV_ARGS(&rootSig))
-    );
-}
-
-size_t CreatePSO(LPCWSTR path) {
-    ComPtr<IDxcBlobEncoding> file;
-    ThrowIfFailed(utils->LoadFile(path, 0, &file));
-
-    ComPtr<IDxcBlob> vs;
-    ComPtr<IDxcBlob> ps;
-    ThrowIfFailed(CompileShader(file, L"VSMain", L"vs_6_5", vs));
-    ThrowIfFailed(CompileShader(file, L"PSMain", L"ps_6_5", ps));
-
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc { 0 };
-    psoDesc.InputLayout = { 0 };
-    psoDesc.pRootSignature = rootSig.Get();
-    psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs->GetBufferPointer(), vs->GetBufferSize());
-    psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps->GetBufferPointer(), ps->GetBufferSize());
-    psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
-    psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-    psoDesc.BlendState.RenderTarget[0].BlendEnable = true;
-    psoDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-    psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-    psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-    psoDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-    psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-    psoDesc.SampleMask = UINT_MAX;
-    psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    psoDesc.NumRenderTargets = 1;
-    psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-    psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-    psoDesc.SampleDesc.Count = 1;
-    //TODO: See if I can send params from App to drive parameters here
-
-    ThrowIfFailed(device->CreateGraphicsPipelineState(
-        &psoDesc,
-        IID_PPV_ARGS(&PSOs.objs[PSOs.count])
-    ));
-    return PSOs.count++;
-}
-
-size_t UploadVertBuffer(void *data, size_t size, size_t stride) {
-    //TODO: Upload vertex buffer to be bound in main root signature table
-    return 0;
-}
-
-size_t UploadIndexBuffer(void *data, size_t size, size_t stride) {
-    //TODO: Upload index buffer to be bound to command buffer
-    // Should look into Mini-Engine / Sokol to learn the right API
-    return 0;
 }
 
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter) {
