@@ -1,5 +1,7 @@
 #include "renderer.h"
+
 #include "debugui.h"
+#include "rootsignature.h"
 #include "TracyD3D12.hpp"
 
 #include <d3dx12.h>
@@ -46,7 +48,6 @@ ComPtr<ID3D12Resource> vBuffer[FRAME_COUNT];
 ComPtr<ID3D12Resource> iBuffer;
 D3D12_INDEX_BUFFER_VIEW iBufferView;
 
-ComPtr<ID3D12RootSignature> rootSig;
 struct PsoArray {
     ComPtr<ID3D12PipelineState> objs[32];
     size_t count;
@@ -202,6 +203,9 @@ void Init(HWND hwnd, int width, int height) {
     }
     ctx = TracyD3D12Context(device.Get(), queue.Get());
     UI::initRender(device.Get(), FRAME_COUNT, DXGI_FORMAT_R8G8B8A8_UNORM, imguiheap.Get());
+
+    //TODO: Initialize base root signature
+    RootSignature::Init(0, 0);
 }
 
 void Teardown() {
