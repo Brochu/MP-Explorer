@@ -1,8 +1,10 @@
+#include "debugui.h"
 #include "renderer.h"
 #include "world.h"
 
 #include "SDL.h"
 
+#include <span>
 #include <stdio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -44,10 +46,17 @@ UINT64 lastStamp;
 HWND hwnd;
 SDL_Window *window;
 
+Code ReadCmdLine(std::span<char*> args) {
+    printf("[CMDLINE] Reading command line args:\n");
+    for (char *a : args) {
+        printf(" - '%s'\n", a);
+    }
+    return Code::OK;
+}
+
 Code Init() {
     startStamp = lastStamp = SDL_GetTicks64();
 
-    printf("[APP] Setting up SDL2 ...\n");
     window = nullptr;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("[ERR] Failed to init SDL2 : %s\n", SDL_GetError());
@@ -58,10 +67,10 @@ Code Init() {
         printf("[ERR] Failed to create SDL2 window %s\n", SDL_GetError());
         return Code::SDL_ERR;
     }
-    hwnd = GetActiveWindow();
     SDL_SetRelativeMouseMode(SDL_TRUE);
+    hwnd = GetActiveWindow();
 
-    printf("[APP] Init renderer ...\n");
+    UI::initApp(window);
     Render::Init(hwnd, WIDTH, HEIGHT);
     return Code::OK;
 }
@@ -83,14 +92,17 @@ Code Draw() {
 }
 
 int main(int argc, char **argv) {
-    //TODO: Parse command line args
+    printf("[MAIN] Reading command line args.\n");
+    ReadCmdLine({ argv, (size_t)argc });
 
+    printf("[MAIN] Init application.\n");
     int initRet = Init();
     if (initRet != Code::OK) {
         printf("[MAIN] Could not complete setup, error code = %i\n", initRet);
         return -1;
     }
 
+    printf("[MAIN] Start of application loop.\n");
     bool running = true;
     while (running) {
         UINT64 current = SDL_GetTicks64();
@@ -111,12 +123,14 @@ int main(int argc, char **argv) {
             printf("[MAIN] Could not complete setup, error code = %i\n", renderRet);
         }
     }
+    printf("[MAIN] End of application loop.\n");
 
     Render::Teardown();
 
-    printf("[APP] Teardown SDL2 ...\n");
+    printf("[MAIN] Teardown application.\n");
     SDL_DestroyWindow(window);
     SDL_Quit();
 
+    printf("[MAIN] Goodbye.\n");
     return 0;
 }
