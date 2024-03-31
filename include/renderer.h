@@ -6,7 +6,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-namespace Render {
+namespace Renderer {
 
 void Init(HWND hwnd, int width, int height);
 void Teardown();

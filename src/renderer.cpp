@@ -20,7 +20,7 @@ do {                        \
     }                       \
 } while(0);                 \
 
-namespace Render {
+namespace Renderer {
 using namespace Microsoft::WRL;
 using namespace DirectX;
 

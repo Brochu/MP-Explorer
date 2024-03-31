@@ -71,7 +71,7 @@ Code Init() {
     hwnd = GetActiveWindow();
 
     UI::initApp(window);
-    Render::Init(hwnd, WIDTH, HEIGHT);
+    Renderer::Init(hwnd, WIDTH, HEIGHT);
     return Code::OK;
 }
 
@@ -87,7 +87,7 @@ Code Update(float delta, float elapsed) {
     return Code::OK;
 }
 
-Code Draw() {
+Code Render() {
     return Code::OK;
 }
 
@@ -118,14 +118,14 @@ int main(int argc, char **argv) {
             printf("[MAIN] Could not complete update sequence, error code = %i\n", upRet);
         }
 
-        int renderRet = Draw();
+        int renderRet = Render();
         if (renderRet != 0) {
             printf("[MAIN] Could not complete setup, error code = %i\n", renderRet);
         }
     }
     printf("[MAIN] End of application loop.\n");
 
-    Render::Teardown();
+    Renderer::Teardown();
 
     printf("[MAIN] Teardown application.\n");
     SDL_DestroyWindow(window);
