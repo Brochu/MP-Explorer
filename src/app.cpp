@@ -116,7 +116,7 @@ void setup() {
     Render::CreateRootSignature(params, {});
     PSOIndex = Render::CreatePSO(L"shaders/shaders.hlsl");
     vertBufIdx = Render::UploadVertBuffer(nullptr, 0l, 0l);
-    indexBufIdx = Render::UploadIndexBuffer(nullptr, 0l, 0l);
+    indexBufIdx = Render::UploadVertBuffer(nullptr, 0l, 0l);
 }
 
 bool update(float delta, float elapsed) {

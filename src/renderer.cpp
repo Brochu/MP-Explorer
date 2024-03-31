@@ -311,7 +311,7 @@ size_t UploadVertBuffer(void *data, size_t size, size_t stride) {
 
 size_t UploadIndexBuffer(void *data, size_t size, size_t stride) {
     //TODO: Upload index buffer to be bound to command buffer
-    // Should look into MS sample render / Sokol to learn the right API
+    // Should look into Mini-Engine / Sokol to learn the right API
     return 0;
 }
 
