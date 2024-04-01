@@ -1,7 +1,6 @@
 #include "cmdmanager.h"
 #include "graphics.h"
 
-#include <d3dx12.h>
 #include <mutex>
 
 namespace CmdManager {
@@ -42,6 +41,34 @@ void Init(ID3D12Device *device) {
 }
 
 void Teardown() {
+    for (int i = 0; i < QueueType::COUNT; i++) {
+        Teardown((QueueType)i);
+    }
+}
+
+void Teardown(QueueType type) {
+    CmdQueue &q = queues[type];
+    if (q.queue.Get() == nullptr) {
+        return;
+    }
+
+    CloseHandle(q.fenceEvent);
+    q.fence->Release();
+    q.fence = nullptr;
+
+    q.queue->Release();
+    q.queue = nullptr;
+}
+
+uint64_t ExecuteCmdList(QueueType type, ID3D12CommandList *list) {
+    CmdQueue &q = queues[type];
+    std::lock_guard<std::mutex> LockGuard(q.fenceMutex);
+
+    ((ID3D12GraphicsCommandList*)list)->Close();
+    q.queue->ExecuteCommandLists(1, &list);
+    q.queue->Signal(q.fence.Get(), q.nextFenceValue);
+
+    return q.nextFenceValue++;
 }
 
 }
