@@ -18,16 +18,9 @@ struct CmdQueue {
     uint64_t nextFenceValue;
     uint64_t lastCompleteFenceValue;
     HANDLE fenceEvent;
+    //TODO: Each queue should have cmd allocator pool
 };
 CmdQueue queues[3];
-
-enum QueueType {
-    Graphics,
-    Async,
-    Copy,
-
-    COUNT
-};
 
 void Init(ID3D12Device *device) {
     //TODO: Add asserts / ThrowIfFailed
