@@ -114,11 +114,13 @@ int main(int argc, char **argv) {
         }
         else if (upRet != Code::OK) {
             printf("[MAIN] Could not complete update sequence, error code = %i\n", upRet);
+            return -1;
         }
 
         int renderRet = Render();
         if (renderRet != 0) {
             printf("[MAIN] Could not complete setup, error code = %i\n", renderRet);
+            return -1;
         }
     }
     printf("[MAIN] End of application loop.\n");
