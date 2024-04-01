@@ -10,6 +10,7 @@ set (RELEASE_OPTIONS /O2)
 set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/d3dx12.h
     ${CMAKE_CURRENT_LIST_DIR}/include/camera.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/cmdmanager.h
     ${CMAKE_CURRENT_LIST_DIR}/include/debugui.h
     ${CMAKE_CURRENT_LIST_DIR}/include/renderer.h
     ${CMAKE_CURRENT_LIST_DIR}/include/rootsignature.h
@@ -29,6 +30,7 @@ set (imgui_headers
 set (source
     ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/camera.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/cmdmanager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debugui.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/renderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/rootsignature.cpp

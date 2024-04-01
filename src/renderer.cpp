@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "cmdmanager.h"
 #include "rootsignature.h"
 
 #include <d3dx12.h>
@@ -76,6 +77,10 @@ void Init(HWND hwnd, int width, int height) {
     ComPtr<IDXGIAdapter1> hardware;
     GetHardwareAdapter(factory.Get(), &hardware, true);
     ThrowIfFailed(D3D12CreateDevice(hardware.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&g_device)));
+
+    //TODO: Initialize wrapper for command queue
+    //g_device->CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC *pDesc, const IID &riid, void **ppCommandQueue)
+    CmdManager::Init(g_device);
 
     //TODO: Initialize base root signature
     RootSignature::Init(0, 0);
