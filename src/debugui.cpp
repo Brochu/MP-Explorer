@@ -12,6 +12,7 @@ bool showDemo = true;
 bool showDebug = true;
 
 void initApp(SDL_Window *window) {
+    //TODO: Rework this so all logic is in Renderer, only drawUI should happen in main
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO(); (void)io;

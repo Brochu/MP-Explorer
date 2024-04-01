@@ -1,4 +1,3 @@
-#include "debugui.h"
 #include "renderer.h"
 #include "world.h"
 
@@ -70,7 +69,6 @@ Code Init() {
     SDL_SetRelativeMouseMode(SDL_TRUE);
     hwnd = GetActiveWindow();
 
-    UI::initApp(window);
     Renderer::Init(hwnd, WIDTH, HEIGHT);
     return Code::OK;
 }
