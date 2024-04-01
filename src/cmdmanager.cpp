@@ -1,11 +1,11 @@
 #include "cmdmanager.h"
-#include "renderer.h"
+#include "graphics.h"
 
 #include <d3dx12.h>
 #include <mutex>
 
 namespace CmdManager {
-using namespace Renderer;
+using namespace Graphics;
 using namespace Microsoft::WRL;
 
 struct CmdQueue {

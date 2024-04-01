@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "graphics.h"
 #include "cmdmanager.h"
 #include "rootsignature.h"
 
@@ -15,7 +15,7 @@ do {                        \
     }                       \
 } while(0);                 \
 
-namespace Renderer {
+namespace Graphics {
 using namespace Microsoft::WRL;
 
 ID3D12Device *g_device;

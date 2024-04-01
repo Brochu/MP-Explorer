@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "graphics.h"
 #include "world.h"
 
 #include "SDL.h"
@@ -69,7 +69,7 @@ Code Init() {
     SDL_SetRelativeMouseMode(SDL_TRUE);
     hwnd = GetActiveWindow();
 
-    Renderer::Init(hwnd, WIDTH, HEIGHT);
+    Graphics::Init(hwnd, WIDTH, HEIGHT);
     return Code::OK;
 }
 
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
     }
     printf("[MAIN] End of application loop.\n");
 
-    Renderer::Teardown();
+    Graphics::Teardown();
 
     printf("[MAIN] Teardown application.\n");
     SDL_DestroyWindow(window);

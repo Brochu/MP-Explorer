@@ -12,7 +12,7 @@ set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/camera.h
     ${CMAKE_CURRENT_LIST_DIR}/include/cmdmanager.h
     ${CMAKE_CURRENT_LIST_DIR}/include/debugui.h
-    ${CMAKE_CURRENT_LIST_DIR}/include/renderer.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/graphics.h
     ${CMAKE_CURRENT_LIST_DIR}/include/rootsignature.h
     ${CMAKE_CURRENT_LIST_DIR}/include/world.h
 )
@@ -32,7 +32,7 @@ set (source
     ${CMAKE_CURRENT_LIST_DIR}/src/camera.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/cmdmanager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debugui.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/renderer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/graphics.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/rootsignature.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/world.cpp
 )
