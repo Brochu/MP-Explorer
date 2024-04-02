@@ -17,8 +17,12 @@ void Teardown();
 
 void Teardown(QueueType type);
 
-uint64_t ExecuteCmdList(ID3D12CommandList *list);
+void CreateCmdList(QueueType type);
+uint64_t ExecuteCmdList(QueueType type, ID3D12CommandList *list);
 
+uint64_t IncrementFence(QueueType type);
+bool IsFenceComplete(QueueType type, uint64_t value);
+void WaitForFence(QueueType type, uint64_t value);
 //TODO: Add functions to handle sync logic per queue
 
 }

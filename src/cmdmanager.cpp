@@ -60,6 +60,11 @@ void Teardown(QueueType type) {
     q.queue = nullptr;
 }
 
+void CreateCmdList(QueueType type) {
+    //IMPL
+    // Depends on implementing command allocators per queue
+}
+
 uint64_t ExecuteCmdList(QueueType type, ID3D12CommandList *list) {
     CmdQueue &q = queues[type];
     std::lock_guard<std::mutex> LockGuard(q.fenceMutex);
@@ -69,6 +74,38 @@ uint64_t ExecuteCmdList(QueueType type, ID3D12CommandList *list) {
     q.queue->Signal(q.fence.Get(), q.nextFenceValue);
 
     return q.nextFenceValue++;
+}
+
+uint64_t IncrementFence(QueueType type) {
+    CmdQueue &q = queues[type];
+    std::lock_guard<std::mutex> LockGuard(q.fenceMutex);
+
+    q.queue->Signal(q.fence.Get(), q.nextFenceValue);
+    return q.nextFenceValue++;
+}
+
+bool IsFenceComplete(QueueType type, uint64_t value) {
+    CmdQueue &q = queues[type];
+
+    if (value > q.lastCompleteFenceValue) {
+        q.lastCompleteFenceValue = max(q.lastCompleteFenceValue, q.fence->GetCompletedValue());
+    }
+    return value <= q.lastCompleteFenceValue;
+}
+
+void WaitForFence(QueueType type, uint64_t value) {
+    if (IsFenceComplete(type, value)) {
+        return;
+    }
+
+    CmdQueue &q = queues[type];
+    {
+        std::lock_guard<std::mutex> lockGuard(q.eventMutex);
+
+        q.fence->SetEventOnCompletion(value, q.fenceEvent);
+        WaitForSingleObject(q.fenceEvent, INFINITE);
+        q.lastCompleteFenceValue = value;
+    }
 }
 
 }
