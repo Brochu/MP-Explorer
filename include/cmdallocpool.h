@@ -8,6 +8,9 @@ struct CmdAllocPool {
     void DiscardAlloc();
 
     void Clear();
+
+private:
+    //TODO: Store internal state
 };
 
 CmdAllocPool CreateAllocatorPool(D3D12_COMMAND_LIST_TYPE type);
