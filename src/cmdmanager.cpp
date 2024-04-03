@@ -1,4 +1,5 @@
 #include "cmdmanager.h"
+#include "cmdallocpool.h"
 #include "graphics.h"
 
 #include <mutex>
@@ -17,7 +18,8 @@ struct CmdQueue {
     uint64_t nextFenceValue;
     uint64_t lastCompleteFenceValue;
     HANDLE fenceEvent;
-    //TODO: Each queue should have cmd allocator pool
+
+    CmdAllocPool pool;
 };
 CmdQueue queues[3];
 
@@ -38,6 +40,8 @@ void Init(ID3D12Device *device) {
     q.fence->Signal(0);
 
     q.fenceEvent = CreateEvent(nullptr, false, false, nullptr);
+
+    InitPool(g_device, desc.Type, q.pool);
 }
 
 void Teardown() {
