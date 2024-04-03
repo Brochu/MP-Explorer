@@ -18,6 +18,13 @@ void CmdAllocPool::DiscardAlloc() {
 }
 
 void CmdAllocPool::Clear() {
+    for (int i = 0; i < MAX_ALLOCS; i++) {
+        if (allocs[i] == nullptr) {
+            continue;
+        }
+
+        allocs[i]->Release();
+    }
 }
 
 }
