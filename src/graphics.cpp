@@ -1,5 +1,4 @@
 #include "graphics.h"
-#include "cmdallocpool.h"
 #include "cmdmanager.h"
 #include "rootsignature.h"
 
@@ -85,9 +84,6 @@ void Init(HWND hwnd, int width, int height) {
 
     //TODO: Initialize base root signature
     RootSignature::Init(0, 0);
-
-    Graphics::CmdAllocPool pool;
-    InitPool(g_device, D3D12_COMMAND_LIST_TYPE_DIRECT, pool);
 }
 
 void Teardown() {
