@@ -12,10 +12,10 @@ enum QueueType {
     COUNT
 };
 
-void Init(ID3D12Device* device);
-void Teardown();
+void InitCmdManager(ID3D12Device* pDevice);
+void ClearCmdManager();
 
-void Teardown(QueueType type);
+void ClearCmdQueue(QueueType type);
 
 void CreateCmdList(QueueType type);
 uint64_t ExecuteCmdList(QueueType type, ID3D12CommandList *list);

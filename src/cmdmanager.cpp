@@ -8,6 +8,8 @@ namespace CmdManager {
 using namespace Graphics;
 using namespace Microsoft::WRL;
 
+ID3D12Device *device;
+
 struct CmdQueue {
     ComPtr<ID3D12CommandQueue> queue;
 
@@ -21,40 +23,43 @@ struct CmdQueue {
 
     CmdAllocPool pool;
 };
-CmdQueue queues[3];
+CmdQueue queues[QueueType::COUNT];
 
-void Init(ID3D12Device *device) {
+void InitCmdManager(ID3D12Device *pDevice) {
+    device = pDevice;
     //TODO: Add asserts / ThrowIfFailed
     // Make graphhics common header with utilities
     CmdQueue &q = queues[QueueType::Graphics];
-    q.nextFenceValue = 1;
-    q.lastCompleteFenceValue = 0;
+    q.nextFenceValue = (uint64_t)QueueType::Graphics << 56 | 1;
+    q.lastCompleteFenceValue = (uint64_t)QueueType::Graphics << 56;
 
     D3D12_COMMAND_QUEUE_DESC desc { };
     desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     desc.NodeMask = 1;
-    HRESULT hr = g_device->CreateCommandQueue(&desc, IID_PPV_ARGS(&q.queue));
+    HRESULT hr = device->CreateCommandQueue(&desc, IID_PPV_ARGS(&q.queue));
 
-    hr = g_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&q.fence));
-    q.fence->Signal(0);
+    hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&q.fence));
+    q.fence->Signal((uint64_t)QueueType::Graphics << 56);
 
     q.fenceEvent = CreateEvent(nullptr, false, false, nullptr);
 
     CreateAllocPool(q.pool, desc.Type, device);
 }
 
-void Teardown() {
+void ClearCmdManager() {
     for (int i = 0; i < QueueType::COUNT; i++) {
-        Teardown((QueueType)i);
+        ClearCmdQueue((QueueType)i);
     }
 }
 
-void Teardown(QueueType type) {
+void ClearCmdQueue(QueueType type) {
     CmdQueue &q = queues[type];
     if (q.queue.Get() == nullptr) {
         return;
     }
+
+    ClearAllocPool(q.pool);
 
     CloseHandle(q.fenceEvent);
     q.fence->Release();
