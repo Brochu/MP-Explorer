@@ -80,7 +80,7 @@ void Init(HWND hwnd, int width, int height) {
 
     //TODO: Initialize wrapper for command queue
     //g_device->CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC *pDesc, const IID &riid, void **ppCommandQueue)
-    CmdManager::InitCmdManager(g_device);
+    CmdManager::CreateCmdManager(g_device);
 
     //TODO: Initialize base root signature
     RootSignature::Init(0, 0);
