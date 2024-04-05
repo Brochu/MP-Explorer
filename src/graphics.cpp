@@ -87,6 +87,7 @@ void Init(HWND hwnd, int width, int height) {
 }
 
 void Teardown() {
+    CmdManager::ClearCmdManager();
 }
 
 //TODO: These functions are needed, but have to be moved to separate files

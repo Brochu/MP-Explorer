@@ -42,6 +42,21 @@ void CreateQueue(CmdQueue &q, ID3D12Device *pdevice) {
     CreateAllocPool(q._pool, q._type, pdevice);
 }
 
+void ClearQueue(CmdQueue &q) {
+    if (q._queue == nullptr) {
+        return;
+    }
+
+    ClearAllocPool(q._pool);
+    CloseHandle(q._fenceEvent);
+
+    q._fence->Release();
+    q._fence = nullptr;
+
+    q._queue->Release();
+    q._queue = nullptr;
+}
+
 // ---------------------------------------------------------
 void CreateCmdManager(ID3D12Device *pdevice) {
     device = pdevice;
@@ -52,6 +67,9 @@ void CreateCmdManager(ID3D12Device *pdevice) {
 }
 
 void ClearCmdManager() {
+    ClearQueue(GraphicsQueue);
+    ClearQueue(ComputeQueue);
+    ClearQueue(CopyQueue);
 }
 
 }
