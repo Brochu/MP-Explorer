@@ -25,4 +25,20 @@ struct CmdQueue {
 void CreateCmdManager(ID3D12Device* pdevice);
 void ClearCmdManager();
 
+CmdQueue &GetGraphicsQueue();
+CmdQueue &GetComputeQueue();
+CmdQueue &GetCopyQueue();
+
+CmdQueue &GetQueue(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+ID3D12CommandQueue *GetCommandQueue();
+
+void CreateCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandList **list, ID3D12CommandAllocator **alloc);
+
+bool IsFenceComplete(uint64_t value);
+void WaitForFence(uint64_t value);
+void IdleGPU();
+
+//-------------------------------------------------------------
+bool QueueReady(CmdQueue &q);
+
 }

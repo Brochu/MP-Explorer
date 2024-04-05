@@ -41,6 +41,10 @@ void ClearQueue(CmdQueue &q) {
     q.queue = nullptr;
 }
 
+bool QueueReady(CmdQueue &q) {
+    return q.queue != nullptr;
+}
+
 // ---------------------------------------------------------
 void CreateCmdManager(ID3D12Device *pdevice) {
     device = pdevice;
@@ -55,5 +59,41 @@ void ClearCmdManager() {
     ClearQueue(ComputeQueue);
     ClearQueue(CopyQueue);
 }
+
+CmdQueue &GetGraphicsQueue() { return GraphicsQueue; }
+CmdQueue &GetComputeQueue() { return ComputeQueue; }
+CmdQueue &GetCopyQueue() { return CopyQueue; }
+
+CmdQueue &GetQueue(D3D12_COMMAND_LIST_TYPE type) {
+    if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE) {
+        return ComputeQueue;
+    }
+    else if (type == D3D12_COMMAND_LIST_TYPE_COPY) {
+        return CopyQueue;
+    }
+    else {
+        return GraphicsQueue;
+    }
+}
+
+ID3D12CommandQueue *GetCommandQueue() {
+    return GraphicsQueue.queue;
+}
+
+void CreateCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandList **list, ID3D12CommandAllocator **alloc) {
+    //TODO: Create allocator + command list from that allocator
+}
+
+bool IsFenceComplete(uint64_t value) {
+    return false;
+}
+
+void WaitForFence(uint64_t value) {
+}
+
+void IdleGPU() {
+}
+
+//-------------------------------------------------------------
 
 }
