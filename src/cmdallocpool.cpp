@@ -1,30 +1,44 @@
 #include "cmdallocpool.h"
 
-namespace Graphics {
+namespace CmdManager {
 
-void InitPool(ID3D12Device *device, D3D12_COMMAND_LIST_TYPE type, CmdAllocPool &pool) {
+void CreateAllocPool(CmdAllocPool &pool, D3D12_COMMAND_LIST_TYPE type, ID3D12Device *pDevice) {
     pool.type = type;
-    for (int i = 0; i < MAX_ALLOCS; i++) {
-        pool.readyList.push(i);
-        device->CreateCommandAllocator(type, IID_PPV_ARGS(&pool.allocs[i]));
+    pool.device = pDevice;
+}
+void ClearAllocPool(CmdAllocPool &pool) {
+    for (size_t i = 0; i < pool.allocPool.size(); i++) {
+        pool.allocPool[i]->Release();
     }
+
+    pool.allocPool.clear();
 }
 
-ID3D12CommandAllocator *CmdAllocPool::RequestAlloc() {
-    return nullptr;
-}
+ID3D12CommandAllocator *RequestAllocator(CmdAllocPool &pool, uint64_t completedValue) {
+    std::lock_guard<std::mutex> lockGuard(pool.allocMutex);
+    ID3D12CommandAllocator *alloc = nullptr;
 
-void CmdAllocPool::DiscardAlloc() {
-}
+    if (!pool.readyList.empty()) {
+        std::pair<uint64_t, ID3D12CommandAllocator*> allocPair = pool.readyList.front();
 
-void CmdAllocPool::Clear() {
-    for (int i = 0; i < MAX_ALLOCS; i++) {
-        if (allocs[i] == nullptr) {
-            continue;
+        if (allocPair.first <= completedValue) {
+            alloc = allocPair.second;
+            alloc->Reset();
+            pool.readyList.pop();
         }
-
-        allocs[i]->Release();
     }
+
+    if (alloc == nullptr) {
+        pool.device->CreateCommandAllocator(pool.type, IID_PPV_ARGS(&alloc));
+        pool.allocPool.push_back(alloc);
+    }
+
+    return alloc;
+}
+void DiscardAllocator(CmdAllocPool &pool, uint64_t value, ID3D12CommandAllocator *alloc) {
+    std::lock_guard<std::mutex> lockGuard(pool.allocMutex);
+
+    pool.readyList.push(std::make_pair(value, alloc));
 }
 
 }

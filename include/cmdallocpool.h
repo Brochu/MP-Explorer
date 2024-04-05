@@ -5,18 +5,17 @@
 #include <vector>
 
 namespace CmdManager {
-#define MAX_ALLOCS 10
 
 struct CmdAllocPool {
     D3D12_COMMAND_LIST_TYPE type;
     ID3D12Device *device;
 
     std::vector<ID3D12CommandAllocator*> allocPool;
-    std::queue<size_t> readyList;
+    std::queue<std::pair<uint64_t, ID3D12CommandAllocator*>> readyList;
     std::mutex allocMutex;
 };
 
-void CreateAllocPool(CmdAllocPool &pool, ID3D12Device *pDevice);
+void CreateAllocPool(CmdAllocPool &pool, D3D12_COMMAND_LIST_TYPE type, ID3D12Device *pDevice);
 void ClearAllocPool(CmdAllocPool &pool);
 
 ID3D12CommandAllocator *RequestAllocator(CmdAllocPool &pool, uint64_t completedValue);

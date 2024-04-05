@@ -41,7 +41,7 @@ void Init(ID3D12Device *device) {
 
     q.fenceEvent = CreateEvent(nullptr, false, false, nullptr);
 
-    InitPool(g_device, desc.Type, q.pool);
+    CreateAllocPool(q.pool, desc.Type, device);
 }
 
 void Teardown() {
