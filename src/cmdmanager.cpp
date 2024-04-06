@@ -1,4 +1,5 @@
 #include "cmdmanager.h"
+#include "cmdallocpool.h"
 
 namespace CmdManager {
 ID3D12Device *device;
@@ -92,9 +93,11 @@ uint64_t ExecuteCommandList(CmdQueue &q, ID3D12CommandList *list) {
     return q.nextValue++;
 }
 ID3D12CommandAllocator *RequestAllcoator(CmdQueue &q) {
-    return nullptr;
+    uint64_t completedFence = q.fence->GetCompletedValue();
+    return RequestAllocator(q.pool, completedFence);
 }
 void DiscardAllocator(CmdQueue &q, uint64_t value, ID3D12CommandAllocator *alloc) {
+    DiscardAllocator(q.pool, value, alloc);
 }
 
 // ---------------------------------------------------------
