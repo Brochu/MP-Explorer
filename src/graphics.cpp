@@ -1,19 +1,13 @@
 #include "graphics.h"
 #include "cmdmanager.h"
 #include "rootsignature.h"
+#include "utility.h"
 
 #include <d3dx12.h>
 #include <dxgi.h>
 #include <dxgi1_6.h>
-#include <assert.h>
 
 #define FRAME_COUNT 2
-#define ThrowIfFailed(hr)   \
-do {                        \
-    if (FAILED(hr)) {       \
-        assert(false);      \
-    }                       \
-} while(0);                 \
 
 namespace Graphics {
 using namespace Microsoft::WRL;
@@ -92,30 +86,6 @@ void Teardown() {
 
 //TODO: These functions are needed, but have to be moved to separate files
 /*
-void WaitForGPU() {
-    ThrowIfFailed(queue->Signal(fence.Get(), fenceValues[frameIndex]));
-    ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
-    WaitForSingleObjectEx(fenceEvent, INFINITE, false);
-
-    fenceValues[frameIndex]++;
-}
-
-void MoveToNextFrame() {
-    TracyD3D12NewFrame(ctx);
-
-    const UINT64 currentFenceValue = fenceValues[frameIndex];
-    ThrowIfFailed(queue->Signal(fence.Get(), currentFenceValue));
-
-    frameIndex = swapchain->GetCurrentBackBufferIndex();
-
-    if (fence->GetCompletedValue() < fenceValues[frameIndex]) {
-        ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
-        WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
-    }
-
-    fenceValues[frameIndex] = currentFenceValue + 1;
-}
-
 HRESULT CompileShader(ComPtr<IDxcBlobEncoding> &src, LPCWSTR entry, LPCWSTR target, ComPtr<IDxcBlob> &shader) {
     printf("[SHADER] Compiling: entry = '%ls'; target = '%ls'\n", entry, target);
     const UINT32 argCount = 4;

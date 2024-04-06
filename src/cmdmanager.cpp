@@ -1,5 +1,6 @@
 #include "cmdmanager.h"
 #include "cmdallocpool.h"
+#include "utility.h"
 
 namespace CmdManager {
 ID3D12Device *device;
@@ -15,7 +16,7 @@ void CreateQueue(CmdQueue &q, ID3D12Device *pdevice) {
     D3D12_COMMAND_QUEUE_DESC desc {};
     desc.Type = q.type;
     desc.NodeMask = 1;
-    pdevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&q.queue));
+    ThrowIfFailed(pdevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&q.queue)));
     q.queue->SetName(L"CmdManager::CommandQueue");
 
     pdevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&q.fence));
