@@ -45,6 +45,43 @@ bool QueueReady(CmdQueue &q) {
     return q.queue != nullptr;
 }
 
+uint64_t IncrementFence(CmdQueue &q) {
+    std::lock_guard<std::mutex> lockGuard(q.fenceMutex);
+    q.queue->Signal(q.fence, q.nextValue);
+    return q.nextValue++;
+}
+
+bool IsFenceComplete(CmdQueue &q, uint64_t fenceValue) {
+    if (fenceValue > q.lastCompleteValue) {
+        q.lastCompleteValue = max(q.lastCompleteValue, q.fence->GetCompletedValue());
+    }
+
+    return fenceValue <= q.lastCompleteValue;
+}
+
+void StallForFence(CmdQueue &q, uint64_t fenceValue) {
+    CmdQueue &producer = GetQueue((D3D12_COMMAND_LIST_TYPE)(fenceValue >> 56));
+    q.queue->Wait(producer.fence, fenceValue);
+}
+
+void StallForProducer(CmdQueue &q, CmdQueue& producer) { 
+    q.queue->Wait(producer.fence, producer.nextValue - 1);
+}
+
+void WaitForFence(CmdQueue &q, uint64_t fenceValue) {
+    if (IsFenceComplete(q, fenceValue)) {
+        return;
+    }
+
+    {
+        std::lock_guard<std::mutex> lockGuard(q.eventMutex);
+
+        q.fence->SetEventOnCompletion(fenceValue, q.fenceEvent);
+        WaitForSingleObject(q.fenceEvent, INFINITE);
+        q.lastCompleteValue = fenceValue;
+    }
+}
+
 // ---------------------------------------------------------
 void CreateCmdManager(ID3D12Device *pdevice) {
     device = pdevice;
@@ -85,15 +122,18 @@ void CreateCommandList(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandList **list, I
 }
 
 bool IsFenceComplete(uint64_t value) {
-    return false;
+    return IsFenceComplete(GetQueue(D3D12_COMMAND_LIST_TYPE(value >> 56)), value);
 }
 
 void WaitForFence(uint64_t value) {
+    CmdQueue &producer = GetQueue((D3D12_COMMAND_LIST_TYPE)(value >> 56));
+    WaitForFence(producer, value);
 }
 
 void IdleGPU() {
+    WaitForIdle(GraphicsQueue);
+    WaitForIdle(ComputeQueue);
+    WaitForIdle(CopyQueue);
 }
-
-//-------------------------------------------------------------
 
 }
