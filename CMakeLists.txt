@@ -15,6 +15,7 @@ set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/debugui.h
     ${CMAKE_CURRENT_LIST_DIR}/include/graphics.h
     ${CMAKE_CURRENT_LIST_DIR}/include/rootsignature.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/utility.h
     ${CMAKE_CURRENT_LIST_DIR}/include/world.h
 )
 set (imgui_headers
@@ -36,6 +37,7 @@ set (source
     ${CMAKE_CURRENT_LIST_DIR}/src/debugui.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/graphics.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/rootsignature.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/utility.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/world.cpp
 )
 set (imgui_source
