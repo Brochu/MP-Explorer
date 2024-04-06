@@ -13,6 +13,7 @@ set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/cmdallocpool.h
     ${CMAKE_CURRENT_LIST_DIR}/include/cmdmanager.h
     ${CMAKE_CURRENT_LIST_DIR}/include/debugui.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/display.h
     ${CMAKE_CURRENT_LIST_DIR}/include/graphics.h
     ${CMAKE_CURRENT_LIST_DIR}/include/rootsignature.h
     ${CMAKE_CURRENT_LIST_DIR}/include/utility.h
@@ -35,6 +36,7 @@ set (source
     ${CMAKE_CURRENT_LIST_DIR}/src/cmdallocpool.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/cmdmanager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debugui.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/display.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/graphics.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/rootsignature.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/utility.cpp
