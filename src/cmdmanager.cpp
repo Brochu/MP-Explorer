@@ -82,6 +82,15 @@ void WaitForFence(CmdQueue &q, uint64_t fenceValue) {
     }
 }
 
+uint64_t ExecuteCommandList(CmdQueue &q, ID3D12CommandList *list) {
+    return 0;
+}
+ID3D12CommandAllocator *RequestAllcoator(CmdQueue &q) {
+    return nullptr;
+}
+void DiscardAllocator(CmdQueue &q, uint64_t value, ID3D12CommandAllocator *alloc) {
+}
+
 // ---------------------------------------------------------
 void CreateCmdManager(ID3D12Device *pdevice) {
     device = pdevice;

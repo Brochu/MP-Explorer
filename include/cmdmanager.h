@@ -52,4 +52,8 @@ inline ID3D12CommandQueue* GetCommandQueue(CmdQueue &q) { return q.queue; }
 
 inline uint64_t GetNextFenceValue(CmdQueue &q) { return q.nextValue; }
 
+uint64_t ExecuteCommandList(CmdQueue &q, ID3D12CommandList *list);
+ID3D12CommandAllocator *RequestAllcoator(CmdQueue &q);
+void DiscardAllocator(CmdQueue &q, uint64_t value, ID3D12CommandAllocator *alloc);
+
 }
