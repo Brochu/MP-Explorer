@@ -1,6 +1,6 @@
 #include "graphics.h"
 #include "cmdmanager.h"
-#include "rootsignature.h"
+#include "display.h"
 #include "utility.h"
 
 #include <d3dx12.h>
@@ -76,8 +76,7 @@ void Init(HWND hwnd, int width, int height) {
     //g_device->CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC *pDesc, const IID &riid, void **ppCommandQueue)
     CmdManager::CreateCmdManager(g_device);
 
-    //TODO: Initialize base root signature
-    RootSignature::Init(0, 0);
+    Display::Init();
 }
 
 void Teardown() {
