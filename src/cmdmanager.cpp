@@ -83,7 +83,13 @@ void WaitForFence(CmdQueue &q, uint64_t fenceValue) {
 }
 
 uint64_t ExecuteCommandList(CmdQueue &q, ID3D12CommandList *list) {
-    return 0;
+    std::lock_guard<std::mutex> lockGuard(q.fenceMutex);
+    ((ID3D12GraphicsCommandList*)list)->Close();
+
+    q.queue->ExecuteCommandLists(1, &list);
+    q.queue->Signal(q.fence, q.nextValue);
+
+    return q.nextValue++;
 }
 ID3D12CommandAllocator *RequestAllcoator(CmdQueue &q) {
     return nullptr;
