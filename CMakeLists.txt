@@ -14,6 +14,7 @@ set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/cmdmanager.h
     ${CMAKE_CURRENT_LIST_DIR}/include/debugui.h
     ${CMAKE_CURRENT_LIST_DIR}/include/display.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/gpuresource.h
     ${CMAKE_CURRENT_LIST_DIR}/include/graphics.h
     ${CMAKE_CURRENT_LIST_DIR}/include/rootsignature.h
     ${CMAKE_CURRENT_LIST_DIR}/include/utility.h
