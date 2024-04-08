@@ -11,4 +11,12 @@ void Present();
 }
 
 namespace Graphics {
+
+extern uint32_t g_displayWidth;
+extern uint32_t g_displayHeight;
+
+uint64_t GetFrameCount();
+float GetFrameTime();
+float GetFrameRate();
+
 }
