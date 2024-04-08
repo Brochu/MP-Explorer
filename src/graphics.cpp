@@ -76,7 +76,7 @@ void Init(HWND hwnd, int width, int height) {
     //g_device->CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC *pDesc, const IID &riid, void **ppCommandQueue)
     CmdManager::CreateCmdManager(g_device);
 
-    Display::Init();
+    Display::Init(hwnd);
 }
 
 void Teardown() {
