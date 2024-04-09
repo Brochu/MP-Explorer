@@ -4,6 +4,8 @@
 
 namespace Graphics {
 
+DXGI_FORMAT GetBaseFormat(DXGI_FORMAT format);
+
 struct PixelBuffer {
     GpuResource res;
 
