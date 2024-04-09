@@ -38,6 +38,7 @@ set (source
     ${CMAKE_CURRENT_LIST_DIR}/src/cmdmanager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/debugui.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/display.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/gpuresource.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/graphics.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/rootsignature.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/utility.cpp
