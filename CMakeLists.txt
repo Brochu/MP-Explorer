@@ -19,6 +19,7 @@ set (headers
     ${CMAKE_CURRENT_LIST_DIR}/include/display.h
     ${CMAKE_CURRENT_LIST_DIR}/include/gpuresource.h
     ${CMAKE_CURRENT_LIST_DIR}/include/graphics.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/pixelbuffer.h
     ${CMAKE_CURRENT_LIST_DIR}/include/rootsignature.h
     ${CMAKE_CURRENT_LIST_DIR}/include/utility.h
 )
@@ -45,6 +46,7 @@ set (source
     ${CMAKE_CURRENT_LIST_DIR}/src/display.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/gpuresource.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/graphics.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/pixelbuffer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/rootsignature.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/utility.cpp
 )
