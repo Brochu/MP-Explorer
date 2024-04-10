@@ -9,6 +9,7 @@ DXGI_FORMAT GetUAVFormat(DXGI_FORMAT format);
 DXGI_FORMAT GetDSVFormat(DXGI_FORMAT defaultFormat);
 DXGI_FORMAT GetDepthFormat(DXGI_FORMAT defaultFormat);
 DXGI_FORMAT GetStencilFormat(DXGI_FORMAT defaultFormat);
+size_t BytesPerPixel(DXGI_FORMAT Format);
 
 struct PixelBuffer {
     GpuResource res;
