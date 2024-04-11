@@ -16,6 +16,7 @@ set (headers
 
     ${CMAKE_CURRENT_LIST_DIR}/include/cmdallocpool.h
     ${CMAKE_CURRENT_LIST_DIR}/include/cmdmanager.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/colorbuffer.h
     ${CMAKE_CURRENT_LIST_DIR}/include/display.h
     ${CMAKE_CURRENT_LIST_DIR}/include/gpuresource.h
     ${CMAKE_CURRENT_LIST_DIR}/include/graphics.h
@@ -43,6 +44,7 @@ set (source
 
     ${CMAKE_CURRENT_LIST_DIR}/src/cmdallocpool.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/cmdmanager.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/colorbuffer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/display.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/gpuresource.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/graphics.cpp
