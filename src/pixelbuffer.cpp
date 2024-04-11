@@ -295,4 +295,27 @@ PixelBuffer CreatePixelBuffer() {
     return pbuf;
 }
 
+D3D12_RESOURCE_DESC DescribeTex2D(PixelBuffer &buf, uint32_t width, uint32_t height,
+                                  uint32_t arraySize, uint32_t numMips,
+                                  DXGI_FORMAT format, UINT flags) {
+    buf.width = width;
+    buf.height = height;
+    buf.arraySize = arraySize;
+    buf.format = format;
+
+    D3D12_RESOURCE_DESC desc { };
+    desc.Alignment = 0;
+    desc.DepthOrArraySize = (UINT16)arraySize;
+    desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    desc.Flags = (D3D12_RESOURCE_FLAGS)flags;
+    desc.Format = GetBaseFormat(format);
+    desc.Width = (UINT64)width;
+    desc.Height = (UINT64)height;
+    desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    desc.MipLevels = (UINT16)numMips;
+    desc.SampleDesc = { 1, 0 };
+
+    return desc;
+}
+
 }
