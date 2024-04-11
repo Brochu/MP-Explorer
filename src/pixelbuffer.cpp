@@ -1,4 +1,6 @@
 #include "pixelbuffer.h"
+#include "utility.h"
+
 #include <cassert>
 
 namespace Graphics {
@@ -328,6 +330,21 @@ void AssocWithResource(PixelBuffer &buf, ID3D12Resource *res, D3D12_RESOURCE_STA
     buf.height = desc.Height;
     buf.arraySize = desc.DepthOrArraySize;
     buf.format = desc.Format;
+}
+
+void CreateTexResource(PixelBuffer &buf, ID3D12Device *device,
+                       const D3D12_RESOURCE_DESC &desc, D3D12_CLEAR_VALUE clear) {
+    DestroyGpuResource(buf.res);
+
+    {
+        CD3DX12_HEAP_PROPERTIES prop(D3D12_HEAP_TYPE_DEFAULT);
+        ThrowIfFailed(device->CreateCommittedResource(&prop, D3D12_HEAP_FLAG_NONE, &desc,
+                                        D3D12_RESOURCE_STATE_COMMON, &clear,
+                                        IID_PPV_ARGS(&buf.res.pResource)));
+    }
+
+    buf.res.usageState = D3D12_RESOURCE_STATE_COMMON;
+    buf.res.gpuVAddr = D3D12_GPU_VIRTUAL_ADDRESS_NULL;
 }
 
 }
