@@ -318,4 +318,16 @@ D3D12_RESOURCE_DESC DescribeTex2D(PixelBuffer &buf, uint32_t width, uint32_t hei
     return desc;
 }
 
+void AssocWithResource(PixelBuffer &buf, ID3D12Resource *res, D3D12_RESOURCE_STATES state) {
+    const D3D12_RESOURCE_DESC desc = res->GetDesc();
+
+    buf.res.pResource.Attach(res);
+    buf.res.usageState = state;
+
+    buf.width = (uint32_t)desc.Width;
+    buf.height = desc.Height;
+    buf.arraySize = desc.DepthOrArraySize;
+    buf.format = desc.Format;
+}
+
 }
