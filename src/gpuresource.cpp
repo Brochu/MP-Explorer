@@ -19,7 +19,7 @@ GpuResource CreateGpuResource(ID3D12Resource *res, D3D12_RESOURCE_STATES state) 
     };
 }
 
-void DestroyGpuResource(GpuResource res) {
+void DestroyGpuResource(GpuResource &res) {
     res.pResource.Reset();
     res.gpuVAddr = D3D12_GPU_VIRTUAL_ADDRESS_NULL;
     ++res.versionID;

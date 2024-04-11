@@ -20,7 +20,7 @@ struct GpuResource {
 GpuResource CreateGpuResource();
 GpuResource CreateGpuResource(ID3D12Resource *res, D3D12_RESOURCE_STATES state);
 
-void DestroyGpuResource(GpuResource res);
+void DestroyGpuResource(GpuResource &res);
 
 inline ID3D12Resource *GetResource(GpuResource res) { return res.pResource.Get(); }
 inline ID3D12Resource **GetAddressOf(GpuResource res) { return res.pResource.GetAddressOf(); }
