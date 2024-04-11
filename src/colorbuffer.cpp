@@ -3,7 +3,10 @@
 namespace Graphics {
 
 ColorBuffer CreateColorBuffer() {
-    return {};
+    ColorBuffer cbuf;
+    cbuf.pix = CreatePixelBuffer();
+
+    return cbuf;
 }
 
 }
