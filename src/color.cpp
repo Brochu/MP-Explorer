@@ -27,7 +27,7 @@ Color MakeColor(uint16_t r, uint16_t g, uint16_t b, uint16_t a, uint16_t bitDept
 
 Color ToSRGB(Color c) {
     XMVECTOR T = XMVectorSaturate(c.vals);
-    XMVECTOR res = XMVectorPow(T, XMVectorReplicate(1.f / 2.4));
+    XMVECTOR res = XMVectorPow(T, XMVectorReplicate(1.f / 2.4f));
     res = XMVectorScale(res, 1.055f);
     res = XMVectorSubtract(res, XMVectorReplicate(0.055f));
 
@@ -35,11 +35,13 @@ Color ToSRGB(Color c) {
     return MakeColor(XMVectorSelect(T, res, g_XMSelect1110));
 }
 Color FromSRGB(Color c) {
+    //TODO: Inverse operation from ToSRGB()
     return {};
 }
 Color ToREC709(Color c) {
     return {};
 }
 Color FromREC709(Color c) {
+    //TODO: Invert operation form ToREC709()
     return {};
 }
