@@ -25,7 +25,12 @@ struct Color {
 };
 
 Color MakeColor();
-Color MakeColor(DirectX::XMVECTORF32 vec);
+Color MakeColor(DirectX::XMVECTOR vec);
 Color MakeColor(const DirectX::XMVECTORF32 &vec);
 Color MakeColor(float r, float g, float b, float a = 1.f);
 Color MakeColor(uint16_t r, uint16_t g, uint16_t b, uint16_t a = 255, uint16_t bitDepth = 8);
+
+Color ToSRGB(Color c);
+Color FromSRGB(Color c);
+Color ToREC709(Color c);
+Color FromREC709(Color c);
