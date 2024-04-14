@@ -39,7 +39,14 @@ Color FromSRGB(Color c) {
     return {};
 }
 Color ToREC709(Color c) {
-    return {};
+    XMVECTOR T = XMVectorSaturate(c.vals);
+    XMVECTOR res = XMVectorPow(T, XMVectorReplicate(0.45f));
+    res = XMVectorScale(res, 1.099f);
+    res = XMVectorSubtract(res, XMVectorReplicate(0.099f));
+
+    res = XMVectorSelect(res, XMVectorScale(T, 4.5f), XMVectorLess(T, XMVectorReplicate(0.0018f)));
+    return MakeColor(XMVectorSelect(T, res, g_XMSelect1110));
+
 }
 Color FromREC709(Color c) {
     //TODO: Invert operation form ToREC709()
