@@ -35,8 +35,13 @@ Color ToSRGB(Color c) {
     return MakeColor(XMVectorSelect(T, res, g_XMSelect1110));
 }
 Color FromSRGB(Color c) {
-    //TODO: Inverse operation from ToSRGB()
-    return {};
+    XMVECTOR T = XMVectorSaturate(c.vals);
+    XMVECTOR res = XMVectorAdd(T, XMVectorReplicate(0.055f));
+    res = XMVectorScale(res, 1.0f / 1.055f);
+    res = XMVectorPow(res, XMVectorReplicate(2.4f));
+
+    res = XMVectorSelect(res, XMVectorScale(T, 1.0f / 12.92f), XMVectorLess(T, XMVectorReplicate(0.0031308f)));
+    return MakeColor(XMVectorSelect(T, res, g_XMSelect1110));
 }
 Color ToREC709(Color c) {
     XMVECTOR T = XMVectorSaturate(c.vals);
@@ -49,6 +54,11 @@ Color ToREC709(Color c) {
 
 }
 Color FromREC709(Color c) {
-    //TODO: Invert operation form ToREC709()
-    return {};
+    XMVECTOR T = XMVectorSaturate(c.vals);
+    XMVECTOR res = XMVectorAdd(T, XMVectorReplicate(0.099f));
+    res = XMVectorScale(res, 1.0f / 1.099f);
+    res = XMVectorPow(res, XMVectorReplicate(1.0f / 0.45f));
+
+    res = XMVectorSelect(res, XMVectorScale(T, 1.0f / 4.5f), XMVectorLess(T, XMVectorReplicate(0.0081f)));
+    return MakeColor(XMVectorSelect(T, res, g_XMSelect1110));
 }
