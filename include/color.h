@@ -37,3 +37,7 @@ Color FromREC709(Color c);
 
 uint32_t R10G10B10A2(Color c);
 uint32_t R8G8B8A8(Color c);
+
+inline Color Max(Color a, Color b) { return MakeColor(DirectX::XMVectorMax(a.vals, b.vals)); }
+inline Color Min(Color a, Color b) { return MakeColor(DirectX::XMVectorMin(a.vals, b.vals)); }
+inline Color Clamp(Color c, Color a, Color b) { return MakeColor(DirectX::XMVectorClamp(c.vals, a.vals, b.vals)); }
