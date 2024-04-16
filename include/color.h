@@ -34,3 +34,5 @@ Color ToSRGB(Color c);
 Color FromSRGB(Color c);
 Color ToREC709(Color c);
 Color FromREC709(Color c);
+
+uint32_t R10G10B10A2(Color c);
