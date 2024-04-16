@@ -74,3 +74,15 @@ uint32_t R10G10B10A2(Color c) {
     uint32_t a = XMVectorGetIntW(res) >> 8;
     return a << 30 | b << 20 | g << 10 | r;
 }
+
+uint32_t R8G8B8A8(Color c) {
+    XMVECTOR res = XMVectorMultiply(XMVectorSaturate(c.vals), XMVectorReplicate(255.f));
+    res = XMVectorRound(res);
+
+    res = _mm_castsi128_ps(_mm_cvttps_epi32(res));
+    uint32_t r = XMVectorGetIntX(res);
+    uint32_t g = XMVectorGetIntY(res);
+    uint32_t b = XMVectorGetIntZ(res);
+    uint32_t a = XMVectorGetIntW(res);
+    return a << 24 | b << 16 | g << 8 | r;
+}
