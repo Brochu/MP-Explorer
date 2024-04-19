@@ -13,6 +13,12 @@ namespace Graphics {
 using namespace Microsoft::WRL;
 
 ID3D12Device *g_device;
+DescriptorAllocator g_descriptorAllocator[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] = {
+    {D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV},
+    {D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER},
+    {D3D12_DESCRIPTOR_HEAP_TYPE_RTV},
+    {D3D12_DESCRIPTOR_HEAP_TYPE_DSV},
+};
 
 void GetHardwareAdapter(IDXGIFactory1 *pfactory, IDXGIAdapter1 **ppAdapter, bool hpAdapter) {
     *ppAdapter = nullptr;
