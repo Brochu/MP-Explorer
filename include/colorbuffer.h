@@ -17,5 +17,6 @@ struct ColorBuffer {
 };
 
 ColorBuffer CreateColorBuffer(Color clear = MakeColor(0.f, 0.f, 0.f, 0.f));
+void InitFromSwapchain(ColorBuffer buf, ID3D12Resource *res);
 
 }
