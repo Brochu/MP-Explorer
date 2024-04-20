@@ -1,4 +1,5 @@
 #include "descriptorheap.h"
+#include "gpuresource.h"
 #include "graphics.h"
 #include "utility.h"
 
@@ -27,8 +28,13 @@ static ID3D12DescriptorHeap *RequestNewHeap(D3D12_DESCRIPTOR_HEAP_TYPE type) {
 };
 
 DescriptorAllocator MakeDescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE type) {
-    //TODO: Impl
-    return { type };
+    DescriptorAllocator alloc { type };
+    alloc.heap = nullptr;
+    alloc.descriptorSize = 0;
+    alloc.numFreeHandles = 0;
+    alloc.nextHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+
+    return alloc;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE AllocDescriptors(DescriptorAllocator &descAllocator, uint32_t count) {
