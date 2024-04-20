@@ -38,7 +38,7 @@ DescriptorAllocator MakeDescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE type) {
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE AllocDescriptors(DescriptorAllocator &allocator, uint32_t count) {
-    if (allocator.heap == nullptr | allocator.numFreeHandles < count) {
+    if (allocator.heap == nullptr || allocator.numFreeHandles < count) {
         allocator.heap = RequestNewHeap(allocator.type);
         allocator.nextHandle = allocator.heap->GetCPUDescriptorHandleForHeapStart();
         allocator.numFreeHandles = s_numDescriptorPerHeap;
@@ -58,4 +58,18 @@ void ClearDescriptorHeaps() {
 }
 
 //--------------------
+DescriptorHandle MakeDescriptorHandle() {
+    DescriptorHandle handle;
+    handle.cpuHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+    handle.gpuHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+    return handle;
+}
+
+DescriptorHandle MakeDescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE pCpu, D3D12_GPU_DESCRIPTOR_HANDLE pGpu) {
+    DescriptorHandle handle;
+    handle.cpuHandle = pCpu;
+    handle.gpuHandle = pGpu;
+    return handle;
+}
+
 }
