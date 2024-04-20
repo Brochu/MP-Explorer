@@ -37,9 +37,21 @@ DescriptorAllocator MakeDescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE type) {
     return alloc;
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE AllocDescriptors(DescriptorAllocator &descAllocator, uint32_t count) {
-    //TODO: Impl
-    return (D3D12_CPU_DESCRIPTOR_HANDLE)0;
+D3D12_CPU_DESCRIPTOR_HANDLE AllocDescriptors(DescriptorAllocator &allocator, uint32_t count) {
+    if (allocator.heap == nullptr | allocator.numFreeHandles < count) {
+        allocator.heap = RequestNewHeap(allocator.type);
+        allocator.nextHandle = allocator.heap->GetCPUDescriptorHandleForHeapStart();
+        allocator.numFreeHandles = s_numDescriptorPerHeap;
+
+        if (allocator.descriptorSize == 0) {
+            allocator.descriptorSize = g_device->GetDescriptorHandleIncrementSize(allocator.type);
+        }
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE res = allocator.nextHandle;
+    allocator.nextHandle.ptr += count * allocator.descriptorSize;
+    allocator.numFreeHandles -= count;
+    return res;
 }
 void ClearDescriptorHeaps() {
     s_descriptorHeapPool.clear();
