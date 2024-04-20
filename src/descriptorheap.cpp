@@ -31,12 +31,12 @@ DescriptorAllocator MakeDescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE type) {
     return { type };
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE Allocate(DescriptorAllocator &descAllocator) {
+D3D12_CPU_DESCRIPTOR_HANDLE AllocDescriptors(DescriptorAllocator &descAllocator, uint32_t count) {
     //TODO: Impl
     return (D3D12_CPU_DESCRIPTOR_HANDLE)0;
 }
-void DestroyAll(DescriptorAllocator &descAllocator) {
-    //TODO: Impl
+void ClearDescriptorHeaps() {
+    s_descriptorHeapPool.clear();
 }
 
 //--------------------

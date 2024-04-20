@@ -12,8 +12,8 @@ struct DescriptorAllocator {
 };
 
 DescriptorAllocator MakeDescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE type);
-D3D12_CPU_DESCRIPTOR_HANDLE Allocate(DescriptorAllocator &descAllocator);
-void DestroyAll(DescriptorAllocator &descAllocator);
+D3D12_CPU_DESCRIPTOR_HANDLE AllocDescriptors(DescriptorAllocator &descAllocator, uint32_t count);
+void ClearDescriptorHeaps();
 
 //--------------------
 struct DescriptorHandle {
