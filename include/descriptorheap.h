@@ -41,5 +41,9 @@ struct DescriptorHeap {
 
 DescriptorHeap MakeDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t maxCount);
 void DestroyDescriptorHeap(DescriptorHeap &heap);
+bool HasSpaceAvailable(DescriptorHeap &heap, uint32_t count);
+DescriptorHandle Alloc(DescriptorHeap &heap, uint32_t count = 1);
+DescriptorHandle GetFromHeap(DescriptorHeap &heap, uint32_t index);
+uint32_t GetOffsetOfHandle(DescriptorHeap &heap, DescriptorHandle &handle);
 
 }

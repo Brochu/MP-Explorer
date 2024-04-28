@@ -3,6 +3,7 @@
 #include "graphics.h"
 #include "utility.h"
 
+#include <assert.h>
 #include <mutex>
 #include <vector>
 
@@ -118,6 +119,28 @@ DescriptorHeap MakeDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t maxC
 void DestroyDescriptorHeap(DescriptorHeap &heap) {
     heap.ptr->Release();
     heap.ptr = nullptr;
+}
+
+bool HasSpaceAvailable(DescriptorHeap &heap, uint32_t count) {
+    return heap.numFreeDescriptors >= count;
+}
+DescriptorHandle Alloc(DescriptorHeap &heap, uint32_t count) {
+    assert(HasSpaceAvailable(heap, count));
+
+    DescriptorHandle res = heap.nextHandle;
+    OffsetHandleBy(heap.nextHandle, count * heap.descriptorSize);
+    heap.numFreeDescriptors -= count;
+    return res;
+}
+
+DescriptorHandle GetFromHeap(DescriptorHeap &heap, uint32_t index) {
+    DescriptorHandle handle = heap.firstHandle;
+    OffsetHandleBy(handle, index * heap.descriptorSize);
+    return handle;
+}
+
+uint32_t GetOffsetOfHandle(DescriptorHeap &heap, DescriptorHandle &handle) {
+    return (uint32_t)(GetCpuPtr(handle) - GetCpuPtr(heap.firstHandle)) / heap.descriptorSize;
 }
 
 }
