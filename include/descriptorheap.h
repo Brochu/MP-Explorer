@@ -26,6 +26,8 @@ DescriptorHandle MakeDescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE pCpu, D3D12_GP
 void OffsetHandleBy(DescriptorHandle &handle, INT offsetScaledByDescSize);
 size_t GetCpuPtr(DescriptorHandle &handle);
 uint64_t GetGpuPtr(DescriptorHandle &handle);
+bool IsHandleNull(DescriptorHandle &handle);
+bool IsHandleShaderVisible(DescriptorHandle &handle);
 
 //--------------------
 struct DescriptorHeap {

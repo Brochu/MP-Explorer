@@ -88,4 +88,11 @@ uint64_t GetGpuPtr(DescriptorHandle &handle) {
     return handle.gpuHandle.ptr;
 }
 
+bool IsHandleNull(DescriptorHandle &handle) {
+    return handle.cpuHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+}
+bool IsHandleShaderVisible(DescriptorHandle &handle) {
+    return handle.gpuHandle.ptr != D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+}
+
 }
