@@ -81,6 +81,7 @@ void OffsetHandleBy(DescriptorHandle &handle, INT offsetScaledByDescSize) {
         handle.gpuHandle.ptr += offsetScaledByDescSize;
     }
 }
+
 size_t GetCpuPtr(DescriptorHandle &handle) {
     return handle.cpuHandle.ptr;
 }
@@ -93,6 +94,30 @@ bool IsHandleNull(DescriptorHandle &handle) {
 }
 bool IsHandleShaderVisible(DescriptorHandle &handle) {
     return handle.gpuHandle.ptr != D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+}
+
+//--------------------
+DescriptorHeap MakeDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t maxCount) {
+    DescriptorHeap res;
+    res.heapDesc.Type = type;
+    res.heapDesc.NumDescriptors = maxCount;
+    res.heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // Do we need non-shader visible heaps?
+    res.heapDesc.NodeMask = 1;
+
+    ThrowIfFailed(g_device->CreateDescriptorHeap(&res.heapDesc, IID_PPV_ARGS(&res.ptr)));
+    res.descriptorSize = g_device->GetDescriptorHandleIncrementSize(type);
+    res.numFreeDescriptors = maxCount;
+    res.firstHandle = {
+        res.ptr->GetCPUDescriptorHandleForHeapStart(),
+        res.ptr->GetGPUDescriptorHandleForHeapStart()
+    };
+    res.nextHandle = res.firstHandle;
+
+    return res;
+}
+void DestroyDescriptorHeap(DescriptorHeap &heap) {
+    heap.ptr->Release();
+    heap.ptr = nullptr;
 }
 
 }

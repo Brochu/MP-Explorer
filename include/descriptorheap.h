@@ -31,6 +31,15 @@ bool IsHandleShaderVisible(DescriptorHandle &handle);
 
 //--------------------
 struct DescriptorHeap {
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> ptr;
+    D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
+    uint32_t descriptorSize;
+    uint32_t numFreeDescriptors;
+    DescriptorHandle firstHandle;
+    DescriptorHandle nextHandle;
 };
+
+DescriptorHeap MakeDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t maxCount);
+void DestroyDescriptorHeap(DescriptorHeap &heap);
 
 }
