@@ -45,5 +45,7 @@ bool HasSpaceAvailable(DescriptorHeap &heap, uint32_t count);
 DescriptorHandle Alloc(DescriptorHeap &heap, uint32_t count = 1);
 DescriptorHandle GetFromHeap(DescriptorHeap &heap, uint32_t index);
 uint32_t GetOffsetOfHandle(DescriptorHeap &heap, DescriptorHandle &handle);
+bool ValidateHandle(DescriptorHeap &heap, DescriptorHandle &handle);
+ID3D12DescriptorHeap *GetHeapPointer(DescriptorHeap &heap);
 
 }

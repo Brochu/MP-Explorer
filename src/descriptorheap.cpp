@@ -143,4 +143,22 @@ uint32_t GetOffsetOfHandle(DescriptorHeap &heap, DescriptorHandle &handle) {
     return (uint32_t)(GetCpuPtr(handle) - GetCpuPtr(heap.firstHandle)) / heap.descriptorSize;
 }
 
+bool ValidateHandle(DescriptorHeap &heap, DescriptorHandle &handle) {
+    if (GetCpuPtr(handle) < GetCpuPtr(heap.firstHandle) || 
+        GetCpuPtr(handle) >= GetCpuPtr(heap.firstHandle) + heap.heapDesc.NumDescriptors * heap.descriptorSize)
+    {
+        return false;
+    }
+
+    if (GetGpuPtr(handle) - GetGpuPtr(heap.firstHandle) != GetCpuPtr(handle) - GetCpuPtr(heap.firstHandle)) {
+        return false;
+    }
+
+    return true;
+}
+
+ID3D12DescriptorHeap *GetHeapPointer(DescriptorHeap &heap) {
+    return heap.ptr.Get();
+}
+
 }
