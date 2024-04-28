@@ -23,8 +23,9 @@ struct DescriptorHandle {
 
 DescriptorHandle MakeDescriptorHandle();
 DescriptorHandle MakeDescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE pCpu, D3D12_GPU_DESCRIPTOR_HANDLE pGpu);
-
 void OffsetHandleBy(DescriptorHandle &handle, INT offsetScaledByDescSize);
+size_t GetCpuPtr(DescriptorHandle &handle);
+uint64_t GetGpuPtr(DescriptorHandle &handle);
 
 //--------------------
 struct DescriptorHeap {

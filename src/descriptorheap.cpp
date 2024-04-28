@@ -81,5 +81,11 @@ void OffsetHandleBy(DescriptorHandle &handle, INT offsetScaledByDescSize) {
         handle.gpuHandle.ptr += offsetScaledByDescSize;
     }
 }
+size_t GetCpuPtr(DescriptorHandle &handle) {
+    return handle.cpuHandle.ptr;
+}
+uint64_t GetGpuPtr(DescriptorHandle &handle) {
+    return handle.gpuHandle.ptr;
+}
 
 }
