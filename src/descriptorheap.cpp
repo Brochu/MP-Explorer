@@ -124,7 +124,7 @@ void DestroyDescriptorHeap(DescriptorHeap &heap) {
 bool HasSpaceAvailable(DescriptorHeap &heap, uint32_t count) {
     return heap.numFreeDescriptors >= count;
 }
-DescriptorHandle Alloc(DescriptorHeap &heap, uint32_t count) {
+DescriptorHandle AllocFromHeap(DescriptorHeap &heap, uint32_t count) {
     assert(HasSpaceAvailable(heap, count));
 
     DescriptorHandle res = heap.nextHandle;
