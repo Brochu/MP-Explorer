@@ -72,4 +72,14 @@ DescriptorHandle MakeDescriptorHandle(D3D12_CPU_DESCRIPTOR_HANDLE pCpu, D3D12_GP
     return handle;
 }
 
+void OffsetHandleBy(DescriptorHandle &handle, INT offsetScaledByDescSize) {
+    if (handle.cpuHandle.ptr != D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN) {
+        handle.cpuHandle.ptr += offsetScaledByDescSize;
+    }
+
+    if (handle.gpuHandle.ptr != D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN) {
+        handle.gpuHandle.ptr += offsetScaledByDescSize;
+    }
+}
+
 }
