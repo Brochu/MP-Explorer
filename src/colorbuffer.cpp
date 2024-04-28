@@ -26,8 +26,8 @@ ColorBuffer CreateColorBuffer(Color clear) {
 void InitFromSwapchain(ColorBuffer buf, ID3D12Resource *res) {
     AssocWithResource(buf.pix, res, D3D12_RESOURCE_STATE_PRESENT);
 
-    //TODO: Ability to allocate descriptors, should be in graphics
-    g_device->CreateRenderTargetView(res, nullptr, (D3D12_CPU_DESCRIPTOR_HANDLE)0);
+    buf.rtvHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    g_device->CreateRenderTargetView(buf.pix.res.pResource.Get(), nullptr, buf.rtvHandle);
 }
 
 }
